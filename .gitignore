@@ -1,0 +1,137 @@
+# Sensitive configuration files
+# The following files are for sensitive credentials and secrets. Do not track them in git.
+Config/credentials.json
+Config/secrets.json
+*.secret
+*.key
+*password*
+
+# Logs and audit trails
+Logs/
+Logs/*.log
+Logs/*.txt
+
+# Backup files
+Backups/
+
+# Data files (may contain sensitive info)
+Data/Input/*
+!Data/Input/.gitkeep
+Data/Export/*
+!Data/Export/.gitkeep
+
+# Temporary files
+Temp/
+*.tmp
+
+# PowerShell modules (if installing globally)
+Modules/*/bin/
+Modules/*/obj/
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# PowerShell profiles
+profile.ps1
+
+# Azure credentials
+.azure/
+
+# Test results
+TestResults/
+*.trx
+*.coverage
+
+# Build and package artifacts
+*.pdb
+*.dll
+*.exe
+*.msi
+*.zip
+*.nupkg
+*.snupkg
+
+# Node modules (if using any web components)
+node_modules/
+
+# Local environment files
+.env
+.env.*
+
+# Certificate and key files
+*.pfx
+*.p12
+*.cer
+*.crt
+*.pem
+
+# SSH keys
+id_rsa
+id_rsa.pub
+*.key
+
+# Custom project-specific exclusions
+personal-config.ps1
+local-settings.json
+production-data/
+prod-export/
+client-configs/
+customer-data/
+
+# Do not ignore documentation or templates
+!Data/Templates/
+!Documentation/
+!README.md
+
+# Windows specific
+*.lnk
+*.tmp
+*.temp
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# MacOS specific
+.AppleDouble
+.LSOverride
+
+# Linux specific
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# PowerShell specific
+*.ps1xml
+*.types.ps1xml
+*.format.ps1xml
+
+# Visual Studio
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+build/
+bld/
+[Bb]in/
+[Oo]bj/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NuGet
+**/packages/*
+!**/packages/build/

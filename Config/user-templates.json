@@ -1,0 +1,302 @@
+{
+  "templates": {
+    "standard_employee": {
+      "name": "Standard Employee",
+      "description": "Template for regular full-time employees",
+      "default_values": {
+        "enabled": true,
+        "change_password_at_logon": true,
+        "password_never_expires": false,
+        "user_cannot_change_password": false,
+        "account_expires": null,
+        "home_drive": "H:",
+        "home_directory": "\\\\fileserver\\users\\{username}",
+        "profile_path": "\\\\fileserver\\profiles\\{username}",
+        "script_path": "logon.bat",
+        "company": "Contoso Corporation",
+        "usage_location": "US"
+      },
+      "organizational_units": {
+        "ad_ou": "OU=StandardUsers,OU=DevelopmentUsers,DC=contoso,DC=local",
+        "azure_ou": null
+      },
+      "default_groups": [
+        "DevelopmentTeam",
+        "AllEmployees",
+        "StandardUsers"
+      ],
+      "azure_licenses": [
+        "Microsoft 365 Business Standard"
+      ],
+      "required_fields": [
+        "first_name",
+        "last_name",
+        "department",
+        "job_title",
+        "email_address"
+      ]
+    },
+    "contractor": {
+      "name": "Contractor/Temporary",
+      "description": "Template for contractors and temporary employees",
+      "default_values": {
+        "enabled": true,
+        "change_password_at_logon": true,
+        "password_never_expires": false,
+        "user_cannot_change_password": false,
+        "account_expires": "{start_date_plus_90_days}",
+        "home_drive": null,
+        "home_directory": null,
+        "profile_path": null,
+        "script_path": "contractor_logon.bat",
+        "company": "Contoso Corporation - Contractor",
+        "usage_location": "US"
+      },
+      "organizational_units": {
+        "ad_ou": "OU=Contractors,OU=DevelopmentUsers,DC=contoso,DC=local",
+        "azure_ou": null
+      },
+      "default_groups": [
+        "Contractors",
+        "LimitedAccess"
+      ],
+      "azure_licenses": [
+        "Microsoft 365 Business Basic"
+      ],
+      "required_fields": [
+        "first_name",
+        "last_name",
+        "department",
+        "job_title",
+        "email_address",
+        "contract_end_date"
+      ]
+    },
+    "admin": {
+      "name": "Administrator",
+      "description": "Template for IT administrators and privileged users",
+      "default_values": {
+        "enabled": true,
+        "change_password_at_logon": true,
+        "password_never_expires": false,
+        "user_cannot_change_password": false,
+        "account_expires": null,
+        "home_drive": "H:",
+        "home_directory": "\\\\fileserver\\admins\\{username}",
+        "profile_path": "\\\\fileserver\\profiles\\{username}",
+        "script_path": "admin_logon.bat",
+        "company": "Contoso Corporation",
+        "usage_location": "US"
+      },
+      "organizational_units": {
+        "ad_ou": "OU=Administrators,OU=DevelopmentUsers,DC=contoso,DC=local",
+        "azure_ou": null
+      },
+      "default_groups": [
+        "ITAdmins",
+        "PowerUsers",
+        "AllEmployees"
+      ],
+      "azure_licenses": [
+        "Microsoft 365 E5",
+        "Enterprise Mobility + Security E5"
+      ],
+      "required_fields": [
+        "first_name",
+        "last_name",
+        "department",
+        "job_title",
+        "email_address",
+        "manager"
+      ]
+    },
+    "developer": {
+      "name": "Developer",
+      "description": "Template for software developers and engineers",
+      "default_values": {
+        "enabled": true,
+        "change_password_at_logon": true,
+        "password_never_expires": false,
+        "user_cannot_change_password": false,
+        "account_expires": null,
+        "home_drive": "H:",
+        "home_directory": "\\\\fileserver\\developers\\{username}",
+        "profile_path": "\\\\fileserver\\profiles\\{username}",
+        "script_path": "dev_logon.bat",
+        "company": "Contoso Corporation",
+        "usage_location": "US"
+      },
+      "organizational_units": {
+        "ad_ou": "OU=Developers,OU=DevelopmentUsers,DC=contoso,DC=local",
+        "azure_ou": null
+      },
+      "default_groups": [
+        "DevelopmentTeam",
+        "Developers",
+        "GitUsers",
+        "AllEmployees"
+      ],
+      "azure_licenses": [
+        "Microsoft 365 Business Premium",
+        "Visual Studio Professional"
+      ],
+      "required_fields": [
+        "first_name",
+        "last_name",
+        "department",
+        "job_title",
+        "email_address",
+        "manager",
+        "programming_languages"
+      ]
+    },
+    "qa_tester": {
+      "name": "QA Tester",
+      "description": "Template for quality assurance and testing personnel",
+      "default_values": {
+        "enabled": true,
+        "change_password_at_logon": true,
+        "password_never_expires": false,
+        "user_cannot_change_password": false,
+        "account_expires": null,
+        "home_drive": "H:",
+        "home_directory": "\\\\fileserver\\qa\\{username}",
+        "profile_path": "\\\\fileserver\\profiles\\{username}",
+        "script_path": "qa_logon.bat",
+        "company": "Contoso Corporation",
+        "usage_location": "US"
+      },
+      "organizational_units": {
+        "ad_ou": "OU=QATeam,OU=DevelopmentUsers,DC=contoso,DC=local",
+        "azure_ou": null
+      },
+      "default_groups": [
+        "QATeam",
+        "TestEnvironmentAccess",
+        "AllEmployees"
+      ],
+      "azure_licenses": [
+        "Microsoft 365 Business Standard",
+        "Azure DevOps Basic"
+      ],
+      "required_fields": [
+        "first_name",
+        "last_name",
+        "department",
+        "job_title",
+        "email_address",
+        "manager"
+      ]
+    },
+    "service_account": {
+      "name": "Service Account",
+      "description": "Template for application and service accounts",
+      "default_values": {
+        "enabled": true,
+        "change_password_at_logon": false,
+        "password_never_expires": true,
+        "user_cannot_change_password": true,
+        "account_expires": null,
+        "home_drive": null,
+        "home_directory": null,
+        "profile_path": null,
+        "script_path": null,
+        "company": "Contoso Corporation - Service Account",
+        "usage_location": "US"
+      },
+      "organizational_units": {
+        "ad_ou": "OU=ServiceAccounts,DC=contoso,DC=local",
+        "azure_ou": null
+      },
+      "default_groups": [
+        "ServiceAccounts"
+      ],
+      "azure_licenses": [],
+      "required_fields": [
+        "service_name",
+        "description",
+        "owner_contact"
+      ]
+    }
+  },
+  "field_mappings": {
+    "ad_fields": {
+      "first_name": "GivenName",
+      "last_name": "Surname",
+      "display_name": "DisplayName",
+      "email_address": "EmailAddress",
+      "job_title": "Title",
+      "department": "Department",
+      "manager": "Manager",
+      "phone": "OfficePhone",
+      "mobile": "MobilePhone",
+      "office": "Office",
+      "address": "StreetAddress",
+      "city": "City",
+      "state": "State",
+      "postal_code": "PostalCode",
+      "country": "Country"
+    },
+    "azure_fields": {
+      "first_name": "GivenName",
+      "last_name": "Surname",
+      "display_name": "DisplayName",
+      "email_address": "Mail",
+      "job_title": "JobTitle",
+      "department": "Department",
+      "manager": "Manager",
+      "phone": "BusinessPhones",
+      "mobile": "MobilePhone",
+      "office": "OfficeLocation",
+      "address": "StreetAddress",
+      "city": "City",
+      "state": "State",
+      "postal_code": "PostalCode",
+      "country": "Country",
+      "usage_location": "UsageLocation"
+    }
+  },
+  "validation_rules": {
+    "username": {
+      "min_length": 3,
+      "max_length": 20,
+      "allowed_characters": "alphanumeric_underscore_hyphen",
+      "case": "lowercase"
+    },
+    "password": {
+      "min_length": 8,
+      "require_uppercase": true,
+      "require_lowercase": true,
+      "require_numbers": true,
+      "require_special_chars": true,
+      "complexity_score": 3
+    },
+    "email": {
+      "format": "valid_email",
+      "domain_restrictions": ["contoso.com", "contoso.local"]
+    }
+  },
+  "automation_settings": {
+    "username_generation": {
+      "format": "{first_initial}{last_name}",
+      "max_length": 20,
+      "handle_duplicates": "append_number",
+      "case": "lowercase"
+    },
+    "email_generation": {
+      "format": "{username}@contoso.com",
+      "verify_mx_record": false
+    },
+    "password_generation": {
+      "length": 12,
+      "use_complex": true,
+      "exclude_ambiguous": true,
+      "temporary": true
+    },
+    "group_assignment": {
+      "auto_assign_by_department": true,
+      "auto_assign_by_job_title": true,
+      "auto_assign_by_location": false
+    }
+  }
+}

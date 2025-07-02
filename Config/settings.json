@@ -1,0 +1,42 @@
+{
+  "Automation": {
+    "DefaultGroups": [
+      "AllEmployees"
+    ],
+    "UsernameFormat": "{first_initial}{last_name}",
+    "EmailDomain": "anthonydoan0405gmail.onmicrosoft.com",
+    "PasswordChangeRequired": true
+  },
+  "AzureAD": {
+    "TenantId": "087863d0-b793-4554-9c92-5b6e8b91165f",
+    "Domain": "anthonydoan0405gmail.onmicrosoft.com",
+    "ClientId": "52b1c08e-2cd6-4dc7-ac49-9fb8473961c0",
+    "Environment": "Development"
+  },
+  "Domains": {
+    "Email": "anthonydoan0405gmail.onmicrosoft.com",
+    "AzureAD": "anthonydoan0405gmail.onmicrosoft.com",
+    "ActiveDirectory": "contoso.local"
+  },
+  "Environment": "Development",
+  "ActiveDirectory": {
+    "ServiceAccountsOU": "OU=ServiceAccounts,DC=contoso,DC=local",
+    "Domain": "contoso.local",
+    "DefaultOU": "OU=DevelopmentUsers,DC=contoso,DC=local",
+    "TestOU": "OU=TestEnvironment,DC=contoso,DC=local",
+    "GroupsOU": "OU=DevelopmentGroups,DC=contoso,DC=local",
+    "Server": "localhost"
+  },
+  "VMSettings": {
+    "TimeZone": "Central Standard Time",
+    "AutoShutdown": "20:00",
+    "ProjectPath": "C:\\UserProvisioningProject"
+  },
+  "Development": {
+    "TestMode": true,
+    "LogLevel": "Verbose",
+    "ExportPath": "C:\\UserProvisioningProject\\Data\\Export\\",
+    "LogPath": "C:\\UserProvisioningProject\\Logs\\",
+    "BackupPath": "C:\\UserProvisioningProject\\Backups\\"
+  }
+}
