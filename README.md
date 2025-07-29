@@ -117,7 +117,6 @@ This project showcases **enterprise-level automation skills** essential for:
 **Anthony Doan**
 
 🔗 **GitHub:** [anthonydoan2001](https://github.com/anthonydoan2001)  
-💼 **LinkedIn:** [Add your LinkedIn profile]  
-📧 **Email:** [Add your professional email]  
-🌐 **Portfolio:** [Add your portfolio website]
+💼 **LinkedIn:** [LinkedIn](https://www.linkedin.com/in/anthonyduydoan/)  
+📧 **Email:** [anthonydoanwork@gmail.com](anthonydoanwork@gmail.com])  
 
