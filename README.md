@@ -25,12 +25,6 @@ This project showcases **enterprise-level automation skills** essential for:
 - **Hybrid identity** scenarios and synchronization
 - **Secure credential management** with proper secrets handling
 
-### 🔧 **DevOps & Automation**
-- **Infrastructure as Code** approach to environment setup
-- **Version control** with Git and professional workflows
-- **Automated testing** and validation frameworks
-- **Comprehensive logging** and monitoring capabilities
-
 
 
 ## 🔧 Technology Stack
@@ -51,35 +45,7 @@ This project showcases **enterprise-level automation skills** essential for:
 ![Git](https://img.shields.io/badge/Git-F05032?style=flat-square&logo=git&logoColor=white) **Git** - Version control and collaboration  
 ![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=github&logoColor=white) **GitHub** - Repository hosting and portfolio showcase
 
-## ✨ Key Features
 
-### 🔐 **Enterprise Security**
-✅ Secure credential management with Git exclusions  
-✅ API permissions following least privilege principle  
-✅ Comprehensive logging for audit trails  
-✅ Error handling with detailed exception management  
-✅ Configuration templates preventing credential exposure
-
-### 🎯 **Production-Ready Automation**
-✅ Standardized user templates with validation  
-✅ Bulk operations with CSV import/export  
-✅ WhatIf support for safe testing  
-✅ Progress tracking and status reporting  
-✅ Rollback capabilities for failed operations
-
-### 🏢 **Enterprise Integration**
-✅ Hybrid identity on-premises to cloud sync  
-✅ Organizational Units structure management  
-✅ Security Groups automated assignment  
-✅ Department-based provisioning workflows  
-✅ Manager relationships and reporting structure
-
-### 📊 **Monitoring & Reporting**
-✅ Comprehensive logging system  
-✅ Error tracking and notification  
-✅ Usage analytics and reporting  
-✅ Performance monitoring capabilities  
-✅ Audit trail maintenance
 
 ## 🎓 Skills Demonstrated
 
@@ -96,20 +62,6 @@ This project showcases **enterprise-level automation skills** essential for:
 - Hybrid identity scenario implementation
 - Cloud-to-on-premises synchronization
 - OAuth 2.0 and modern authentication flows
-
-### DevOps & Best Practices
-- Infrastructure as Code (IaC) methodology
-- Version control with Git workflows  
-- Automated testing and validation frameworks
-- Comprehensive documentation and README generation
-- Security-first development approach
-
-### Enterprise Development
-- Production-ready error handling and logging
-- Scalable automation framework design
-- Configuration management and templating
-- Bulk operations and data processing  
-- Professional code organization and structure
 
 
 
