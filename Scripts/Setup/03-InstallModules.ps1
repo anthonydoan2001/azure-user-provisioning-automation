@@ -1,5 +1,4 @@
-# 03-InstallModules.ps1 - UPDATED VERSION
-# Install required PowerShell modules for Azure and AD automation
+# 03-InstallModules.ps1
 
 #Requires -RunAsAdministrator
 

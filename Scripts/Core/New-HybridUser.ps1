@@ -1,5 +1,4 @@
 # New-HybridUser.ps1
-# Create user accounts in both Active Directory and Azure AD
 
 [CmdletBinding()]
 param(
@@ -26,7 +25,7 @@ param(
     [string]$LogPath = "C:\UserProvisioningProject\Logs\"
 )
 
-# Create log entry function
+# Logging Function
 function Write-ProvisioningLog {
     param([string]$Message, [string]$Level = "INFO")
     $LogFile = Join-Path $LogPath "provisioning-$(Get-Date -Format 'yyyy-MM-dd').log"
@@ -41,7 +40,7 @@ function Write-ProvisioningLog {
     $LogEntry | Out-File -FilePath $LogFile -Append -Encoding UTF8
 }
 
-# Load configuration - READ DOMAINS FROM CONFIG
+# Configuration Management
 $ConfigPath = "C:\UserProvisioningProject\Config\settings.json"
 $CredentialsPath = "C:\UserProvisioningProject\Config\credentials.json"
 
@@ -54,7 +53,7 @@ try {
     $Config = Get-Content $ConfigPath | ConvertFrom-Json
     $Credentials = Get-Content $CredentialsPath | ConvertFrom-Json
     
-    # Get domains from configuration
+    # Load domain configuration
     $AzureDomain = $Credentials.AzureDomain
     $ADDomain = $Credentials.ADDomain
     
@@ -71,7 +70,7 @@ try {
     exit 1
 }
 
-# Generate user details using configured domains
+# User Account Generation
 $SamAccountName = ($FirstName.Substring(0,1) + $LastName).ToLower()
 $ADUserPrincipalName = "$SamAccountName@$ADDomain"
 $AzureUserPrincipalName = "$SamAccountName@$AzureDomain"
@@ -92,12 +91,12 @@ Write-Host "  Job Title: $JobTitle" -ForegroundColor White
 Write-Host "  Manager: $Manager" -ForegroundColor White
 Write-Host "  Location: $Location" -ForegroundColor White
 
-# Step 1: Check Active Directory availability
+# Active Directory Availability Check
 Write-Host "`n1. Checking Active Directory availability..." -ForegroundColor Yellow
 $ADAvailable = $false
 try {
     Import-Module ActiveDirectory -ErrorAction Stop
-    # Test AD connection with timeout
+    # Test Active Directory connection
     $ADDomain = Get-ADDomain -ErrorAction Stop
     $ADAvailable = $true
     Write-Host "   Active Directory available: $($ADDomain.DNSRoot)" -ForegroundColor Green
@@ -108,7 +107,7 @@ catch {
     Write-ProvisioningLog "Active Directory not available: $($_.Exception.Message)" "WARNING"
 }
 
-# Step 2: Check Azure AD availability
+# Azure AD Availability Check
 Write-Host "`n2. Checking Azure AD availability..." -ForegroundColor Yellow
 $AzureAvailable = $false
 $Credentials = $null
@@ -126,7 +125,7 @@ try {
         $SecureSecret = ConvertTo-SecureString $Credentials.ClientSecret -AsPlainText -Force
         $ClientSecretCredential = New-Object System.Management.Automation.PSCredential($Credentials.ClientId, $SecureSecret)
         
-        # Test connection with timeout using job
+        # Test connection using background job
         $ConnectionJob = Start-Job -ScriptBlock {
             param($TenantId, $ClientId, $ClientSecret)
             Import-Module Microsoft.Graph.Authentication
@@ -159,7 +158,7 @@ catch {
     Write-ProvisioningLog "Azure AD not available: $($_.Exception.Message)" "WARNING"
 }
 
-# Step 3: Determine what can be done
+# Service Availability Assessment
 Write-Host "`n3. Determining provisioning options..." -ForegroundColor Yellow
 if (-not $ADAvailable -and -not $AzureAvailable) {
     Write-Host "   Neither Active Directory nor Azure AD are available" -ForegroundColor Red
@@ -168,21 +167,21 @@ if (-not $ADAvailable -and -not $AzureAvailable) {
     exit 1
 }
 
-# Step 4: Create Active Directory User (if available) - FIXED VERSION
+# Active Directory User Creation
 if ($ADAvailable) {
     Write-Host "`n4. Processing Active Directory user..." -ForegroundColor Yellow
         try {
-            # Check if user already exists - FIXED ERROR HANDLING
+            # Check if user already exists
             $ExistingUser = $null
             try {
                 $ExistingUser = Get-ADUser -Identity $SamAccountName -ErrorAction Stop
             }
             catch [Microsoft.ActiveDirectory.Management.ADIdentityNotFoundException] {
-                # User doesn't exist - this is what we want for new user creation
+                # User doesn't exist - proceed with creation
                 $ExistingUser = $null
             }
             catch {
-                # Other error - report it but continue
+                # Handle other errors
                 Write-Host "   Warning: Error checking existing user: $($_.Exception.Message)" -ForegroundColor Yellow
                 $ExistingUser = $null
             }
@@ -191,23 +190,23 @@ if ($ADAvailable) {
                 Write-Host "   Warning: AD user already exists: $SamAccountName" -ForegroundColor Yellow
                 Write-ProvisioningLog "AD user already exists: $SamAccountName" "WARNING"
             } else {
-                # Create the user
+                # Create Active Directory user
                 $SecurePassword = ConvertTo-SecureString "TempPass123!" -AsPlainText -Force
                 
-                # Check if the target OU exists, fall back to Users container if not
+                # Determine target organizational unit
                 $TargetOU = "OU=DevelopmentUsers,DC=contoso,DC=local"
                 try {
                     Get-ADOrganizationalUnit -Identity $TargetOU -ErrorAction Stop | Out-Null
                     Write-Host "   Using target OU: $TargetOU" -ForegroundColor Gray
                 }
                 catch {
-                    # Fall back to default Users container
+                    # Use default Users container
                     $TargetOU = "CN=Users,DC=contoso,DC=local"
                     Write-Host "   Warning: Using default Users container (DevelopmentUsers OU not found)" -ForegroundColor Yellow
                     Write-ProvisioningLog "Using default Users container - DevelopmentUsers OU not found" "WARNING"
                 }
                 
-                # Create user parameters
+                # Configure user parameters
                 $NewUserParams = @{
                     Name = $DisplayName
                     GivenName = $FirstName
@@ -231,10 +230,10 @@ if ($ADAvailable) {
                 Write-Host "   AD user created successfully: $SamAccountName" -ForegroundColor Green
                 Write-ProvisioningLog "AD user created successfully: $SamAccountName"
                 
-                # Add to default groups with better error handling
-                $DefaultGroups = @("Domain Users")  # Start with Domain Users which should always exist
+                # Add to default groups
+                $DefaultGroups = @("Domain Users")  # Initialize with Domain Users group
                 
-                # Try to add to DevelopmentTeam if it exists
+                # Add to DevelopmentTeam if available
                 try {
                     $DevGroup = Get-ADGroup -Identity "DevelopmentTeam" -ErrorAction Stop
                     $DefaultGroups += "DevelopmentTeam"
@@ -264,23 +263,23 @@ if ($ADAvailable) {
     Write-Host "`n4. Active Directory user creation skipped (AD not available)" -ForegroundColor Yellow
 }
 
-# Step 5: Create Azure AD User (if available) - FIXED VERSION
+# Azure AD User Creation
 if ($AzureAvailable) {
     Write-Host "`n5. Processing Azure AD user..." -ForegroundColor Yellow
         try {
-            # Reconnect to Azure AD
+            # Connect to Azure AD
             Import-Module Microsoft.Graph.Users -Force
             $SecureSecret = ConvertTo-SecureString $Credentials.ClientSecret -AsPlainText -Force
             $ClientSecretCredential = New-Object System.Management.Automation.PSCredential($Credentials.ClientId, $SecureSecret)
             Connect-MgGraph -TenantId $Credentials.TenantId -ClientSecretCredential $ClientSecretCredential -NoWelcome
             
-            # Check if user already exists - FIXED VERSION
+            # Check if user already exists
             $ExistingAzureUser = Get-MgUser -Filter "userPrincipalName eq '$AzureUserPrincipalName'" -ErrorAction SilentlyContinue
             if ($ExistingAzureUser) {
                 Write-Host "   Warning: Azure AD user already exists: $AzureUserPrincipalName" -ForegroundColor Yellow
                 Write-ProvisioningLog "Azure AD user already exists: $AzureUserPrincipalName" "WARNING"
             } else {
-                # Create Azure AD user with correct domain
+                # Create Azure AD user account
                 $PasswordProfile = @{
                     Password = "TempAzurePass123!"
                     ForceChangePasswordNextSignIn = $true
@@ -319,7 +318,7 @@ if ($AzureAvailable) {
     Write-Host "`n5. Azure AD user creation skipped (Azure AD not available)" -ForegroundColor Yellow
 }
 
-# Summary
+# Provisioning Summary
 Write-Host "`n=== PROVISIONING SUMMARY ===" -ForegroundColor Cyan
 Write-Host "User: $DisplayName" -ForegroundColor White
 Write-Host "AD Available: $(if($ADAvailable){'Yes'}else{'No'})" -ForegroundColor $(if($ADAvailable){'Green'}else{'Red'})

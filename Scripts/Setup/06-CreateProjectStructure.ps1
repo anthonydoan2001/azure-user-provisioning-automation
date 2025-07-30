@@ -1,5 +1,4 @@
 # 06-CreateProjectStructure.ps1
-# Create configuration files and project structure
 
 Write-Host "=== PROJECT STRUCTURE CONFIGURATION ===" -ForegroundColor Cyan
 

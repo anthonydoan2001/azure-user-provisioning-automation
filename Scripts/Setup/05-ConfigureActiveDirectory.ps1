@@ -1,6 +1,4 @@
 # 05-ConfigureActiveDirectory.ps1
-# Configure Active Directory structure after domain controller promotion
-# Run this AFTER the server restarts from domain controller promotion
 
 #Requires -RunAsAdministrator
 

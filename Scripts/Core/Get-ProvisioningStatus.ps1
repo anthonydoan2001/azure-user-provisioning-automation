@@ -1,5 +1,4 @@
 # Get-ProvisioningStatus.ps1
-# Check the status of user and group provisioning across both environments
 
 [CmdletBinding()]
 param(
@@ -46,7 +45,7 @@ function Get-UserStatus {
         Issues = @()
     }
     
-    # Check Active Directory (same as debug)
+    # Check Active Directory status
     Write-Host "  Checking Active Directory..." -ForegroundColor Gray
     try {
         Import-Module ActiveDirectory -Force -ErrorAction Stop
@@ -57,7 +56,7 @@ function Get-UserStatus {
             $UserStatus.ADEnabled = $ADUser.Enabled
             $UserStatus.DisplayName = $ADUser.Name
             
-            # Get group memberships (simplified)
+            # Get group memberships
             if ($ADUser.MemberOf) {
                 $UserStatus.ADGroups = $ADUser.MemberOf | ForEach-Object {
                     try {
@@ -75,18 +74,18 @@ function Get-UserStatus {
         Write-Host "    AD lookup error: $($_.Exception.Message)" -ForegroundColor Red
     }
     
-    # Check Azure AD (same pattern as debug)
+    # Check Azure AD status
     Write-Host "  Checking Azure AD..." -ForegroundColor Gray
     try {
         # Import modules
         Import-Module Microsoft.Graph.Authentication -Force -ErrorAction Stop
         Import-Module Microsoft.Graph.Users -Force -ErrorAction Stop
         
-        # Create credentials
+        # Authenticate to Microsoft Graph
         $SecureSecret = ConvertTo-SecureString $Credentials.ClientSecret -AsPlainText -Force
         $ClientSecretCredential = New-Object System.Management.Automation.PSCredential($Credentials.ClientId, $SecureSecret)
         
-        # Connect using job pattern that worked
+        # Connect to Microsoft Graph using background job
         $ConnectionJob = Start-Job -ScriptBlock {
             param($TenantId, $ClientId, $ClientSecret, $UserIdentity, $AzureDomain)
             
@@ -98,7 +97,7 @@ function Get-UserStatus {
             
             Connect-MgGraph -TenantId $TenantId -ClientSecretCredential $Cred -NoWelcome
             
-            # Look up user
+            # Query Azure AD for user
             $UPN = "$UserIdentity@$AzureDomain"
             $AzureUser = Get-MgUser -Filter "userPrincipalName eq '$UPN'" -Property "displayName,accountEnabled" -ErrorAction SilentlyContinue
             
@@ -164,7 +163,7 @@ function Get-UserStatus {
     
     return $UserStatus
 }
-# Add this function to your Get-ProvisioningStatus.ps1 (after the Get-UserStatus function)
+# Group Status Function
 
 function Get-GroupStatus {
     param([string]$Identity)
@@ -197,7 +196,7 @@ function Get-GroupStatus {
             $GroupStatus.DisplayName = $ADGroup.Name
             $GroupStatus.GroupType = "$($ADGroup.GroupCategory) ($($ADGroup.GroupScope))"
             
-            # Get member names - IMPROVED VERSION
+            # Get member names
             if ($ADGroup.Members) {
                 $GroupStatus.ADMembers = $ADGroup.Members | ForEach-Object {
                     try {
@@ -222,7 +221,7 @@ function Get-GroupStatus {
         Write-Host "    AD lookup error: $($_.Exception.Message)" -ForegroundColor Red
     }
     
-    # Check Azure AD - FIXED VERSION
+    # Check Azure AD status
     Write-Host "  Checking Azure AD..." -ForegroundColor Gray
     try {
         $AzureGroupJob = Start-Job -ScriptBlock {
@@ -249,7 +248,7 @@ function Get-GroupStatus {
                 $Result.Found = $true
                 $Result.DisplayName = $AzureGroup.DisplayName
                 
-                # Get group members with better error handling
+                # Get group members
                 try {
                     $Members = Get-MgGroupMember -GroupId $AzureGroup.Id -ErrorAction SilentlyContinue
                     $Result.MemberCount = $Members.Count
@@ -263,7 +262,7 @@ function Get-GroupStatus {
                                 Id = $Member.Id
                             }
                             
-                            # Check what type of object this is
+                            # Determine member object type
                             switch ($Member.'@odata.type') {
                                 '#microsoft.graph.user' {
                                     $User = Get-MgUser -UserId $Member.Id -Property "displayName,userPrincipalName" -ErrorAction SilentlyContinue
@@ -323,7 +322,7 @@ function Get-GroupStatus {
                 }
                 Write-Host "    Found in Azure AD: $($AzureResult.DisplayName) ($($AzureResult.MemberCount) members)" -ForegroundColor Green
                 
-                # Show member breakdown if detailed info available
+                # Display member type breakdown
                 if ($AzureResult.MemberDetails -and $AzureResult.MemberDetails.Count -gt 0) {
                     $UserCount = ($AzureResult.MemberDetails | Where-Object { $_.Type -eq "User" }).Count
                     $GroupCount = ($AzureResult.MemberDetails | Where-Object { $_.Type -eq "Group" }).Count

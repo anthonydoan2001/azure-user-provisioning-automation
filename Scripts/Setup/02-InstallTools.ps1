@@ -1,9 +1,8 @@
 # 02-InstallTools.ps1
-# Install development tools via Chocolatey
 
 Write-Host "=== DEVELOPMENT TOOLS INSTALLATION ===" -ForegroundColor Cyan
 
-# Array of tools to install
+# Development Tools Configuration
 $Tools = @(
     @{Name="PowerShell 7"; Package="powershell-core"},
     @{Name="Visual Studio Code"; Package="vscode"},
@@ -22,11 +21,11 @@ foreach ($Tool in $Tools) {
     }
 }
 
-# Refresh environment variables
+# Environment Variable Refresh
 Write-Host "Refreshing environment variables..." -ForegroundColor Yellow
 refreshenv
 
-# Verify PowerShell 7 installation
+# Installation Verification
 try {
     $PS7Version = pwsh --version
     Write-Host "Success: PowerShell 7 version: $PS7Version" -ForegroundColor Green

@@ -1,5 +1,4 @@
-# 04-InstallActiveDirectory.ps1 - UPDATED VERSION
-# Install and configure Active Directory Domain Services
+# 04-InstallActiveDirectory.ps1
 
 #Requires -RunAsAdministrator
 

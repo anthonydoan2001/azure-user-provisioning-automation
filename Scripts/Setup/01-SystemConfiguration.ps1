@@ -1,17 +1,16 @@
 # 01-SystemConfiguration.ps1
-# Initial system configuration for development environment
 
 Write-Host "=== SYSTEM CONFIGURATION SCRIPT ===" -ForegroundColor Cyan
 Write-Host "Configuring PowerShell execution policy..." -ForegroundColor Yellow
 
-# Set execution policy to allow scripts
+# Configure PowerShell execution policy
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force
 
-# Verify the change
+# Verify execution policy configuration
 $ExecutionPolicy = Get-ExecutionPolicy
 Write-Host "Success: Execution Policy set to: $ExecutionPolicy" -ForegroundColor Green
 
-# Install Chocolatey package manager
+# Package Manager Installation
 Write-Host "Installing Chocolatey package manager..." -ForegroundColor Yellow
 Set-ExecutionPolicy Bypass -Scope Process -Force
 [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072

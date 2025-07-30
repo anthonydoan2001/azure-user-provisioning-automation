@@ -1,9 +1,8 @@
 # 08-UpdateAzureConfig.ps1
-# Configure Azure AD connection and domain settings
 
 Write-Host "=== AZURE AD CONFIGURATION ===" -ForegroundColor Cyan
 
-# Ensure Config directory exists
+# Configuration Directory Setup
 if (-not (Test-Path "Config")) {
     New-Item -Path "Config" -ItemType Directory -Force | Out-Null
 }
@@ -29,20 +28,20 @@ Write-Host "Then click 'Grant admin consent for [Your Organization]'" -Foregroun
 
 Write-Host "`nENTER YOUR AZURE AD DETAILS:" -ForegroundColor Yellow
 
-# Get Azure AD configuration
+# Azure AD Application Registration Input
 $TenantId = Read-Host "Enter your Tenant ID"
 $ClientId = Read-Host "Enter your Client ID (Application ID)"
 $ClientSecret = Read-Host "Enter your Client Secret" -AsSecureString
 
-# Get domain information
+# Domain Configuration
 Write-Host "`nDOMAIN CONFIGURATION:" -ForegroundColor Yellow
 Write-Host "Checking your verified domains..." -ForegroundColor Gray
 
 try {
-    # Connect to get domain info
+    # Connect to retrieve domain information
     Import-Module Microsoft.Graph.Identity.DirectoryManagement -ErrorAction Stop
     
-    # Convert SecureString to plain text for connection
+    # Convert SecureString for authentication
     $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($ClientSecret)
     $PlainSecret = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
     [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($BSTR)

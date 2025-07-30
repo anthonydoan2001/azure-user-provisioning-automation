@@ -1,5 +1,4 @@
 # New-HybridGroup.ps1
-# Create security groups in both Active Directory and Azure AD
 
 [CmdletBinding()]
 param(
@@ -28,7 +27,7 @@ param(
     [string]$LogPath = "C:\UserProvisioningProject\Logs\"
 )
 
-# Create log entry function
+# Logging Function
 function Write-ProvisioningLog {
     param([string]$Message, [string]$Level = "INFO")
     $LogFile = Join-Path $LogPath "provisioning-$(Get-Date -Format 'yyyy-MM-dd').log"
@@ -43,7 +42,7 @@ function Write-ProvisioningLog {
     $LogEntry | Out-File -FilePath $LogFile -Append -Encoding UTF8
 }
 
-# Load configuration
+# Configuration Management
 $CredentialsPath = "C:\UserProvisioningProject\Config\credentials.json"
 
 if (-not (Test-Path $CredentialsPath)) {
@@ -79,7 +78,7 @@ Write-Host "  Scope: $GroupScope" -ForegroundColor White
 if ($Owner) { Write-Host "  Owner: $Owner" -ForegroundColor White }
 if ($Members) { Write-Host "  Members: $($Members -join ', ')" -ForegroundColor White }
 
-# Step 1: Check Active Directory availability
+# Active Directory Availability Check
 Write-Host "`n1. Checking Active Directory availability..." -ForegroundColor Yellow
 $ADAvailable = $false
 try {
@@ -94,11 +93,11 @@ catch {
     Write-ProvisioningLog "Active Directory not available: $($_.Exception.Message)" "WARNING"
 }
 
-# Step 2: Check Azure AD availability
+# Azure AD Availability Check
 Write-Host "`n2. Checking Azure AD availability..." -ForegroundColor Yellow
 $AzureAvailable = $false
 try {
-    # Test connection using job pattern that works
+    # Test connection using background job
     $ConnectionJob = Start-Job -ScriptBlock {
         param($TenantId, $ClientId, $ClientSecret)
         
@@ -131,14 +130,14 @@ catch {
     Write-ProvisioningLog "Azure AD not available: $($_.Exception.Message)" "WARNING"
 }
 
-# Step 3: Determine what can be done
+# Service Availability Assessment
 if (-not $ADAvailable -and -not $AzureAvailable) {
     Write-Host "   Neither Active Directory nor Azure AD are available" -ForegroundColor Red
     Write-ProvisioningLog "Neither AD nor Azure AD available - cannot provision group" "ERROR"
     exit 1
 }
 
-# Step 4: Create Active Directory Group
+# Active Directory Group Creation
 if ($ADAvailable) {
     Write-Host "`n4. Processing Active Directory group..." -ForegroundColor Yellow
         try {
@@ -183,18 +182,18 @@ if ($ADAvailable) {
                 Write-Host "   AD group created successfully: $GroupName" -ForegroundColor Green
                 Write-ProvisioningLog "AD group created successfully: $GroupName"
                 
-                # Add members if specified
+                # Add initial members
                 if ($Members) {
                     foreach ($Member in $Members) {
                         try {
-                            # Extract username from email if needed
+                            # Extract username from email format
                             $Username = if ($Member -like "*@*") { 
                                 ($Member -split "@")[0] 
                             } else { 
                                 $Member 
                             }
                             
-                            # Check if user exists
+                            # Validate user exists in AD
                             $ADUser = Get-ADUser -Identity $Username -ErrorAction SilentlyContinue
                             if ($ADUser) {
                                 Add-ADGroupMember -Identity $GroupName -Members $Username
@@ -221,9 +220,8 @@ if ($ADAvailable) {
     Write-Host "`n4. Active Directory group creation skipped (AD not available)" -ForegroundColor Yellow
 }
 
-# Replace the Azure AD group creation section with this fixed version:
 
-# Step 5: Create Azure AD Group
+# Azure AD Group Creation
 if ($AzureAvailable) {
     Write-Host "`n5. Processing Azure AD group..." -ForegroundColor Yellow
         try {
@@ -363,7 +361,7 @@ if ($AzureAvailable) {
     Write-Host "`n5. Azure AD group creation skipped (Azure AD not available)" -ForegroundColor Yellow
 }
 
-# Summary
+# Provisioning Summary
 Write-Host "`n=== GROUP PROVISIONING SUMMARY ===" -ForegroundColor Cyan
 Write-Host "Group Name: $GroupName" -ForegroundColor White
 Write-Host "Description: $Description" -ForegroundColor White
