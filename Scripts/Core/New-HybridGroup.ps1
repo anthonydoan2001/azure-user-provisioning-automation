@@ -23,8 +23,6 @@ param(
     [Parameter(Mandatory = $false)]
     [string]$Owner,
     
-    [Parameter(Mandatory = $false)]
-    [switch]$TestRun,
     
     [Parameter(Mandatory = $false)]
     [string]$LogPath = "C:\UserProvisioningProject\Logs\"
@@ -49,7 +47,7 @@ function Write-ProvisioningLog {
 $CredentialsPath = "C:\UserProvisioningProject\Config\credentials.json"
 
 if (-not (Test-Path $CredentialsPath)) {
-    Write-Host "✗ Configuration file not found. Run 08-UpdateAzureConfig.ps1 first." -ForegroundColor Red
+    Write-Host "Configuration file not found. Run 08-UpdateAzureConfig.ps1 first." -ForegroundColor Red
     exit 1
 }
 
@@ -59,26 +57,21 @@ try {
     $ADDomain = $Credentials.ADDomain
     
     if (-not $AzureDomain -or -not $ADDomain) {
-        Write-Host "✗ Domain configuration incomplete." -ForegroundColor Red
+        Write-Host "Domain configuration incomplete." -ForegroundColor Red
         exit 1
     }
     
     Write-ProvisioningLog "Loaded configuration - Azure Domain: $AzureDomain, AD Domain: $ADDomain"
     
 } catch {
-    Write-Host "✗ Failed to load configuration: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Failed to load configuration: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
 
 Write-Host "=== HYBRID GROUP PROVISIONING ===" -ForegroundColor Cyan
 Write-ProvisioningLog "Starting hybrid group provisioning for: $GroupName"
 
-if ($TestRun) {
-    Write-Host "🧪 TEST RUN MODE - No actual changes will be made" -ForegroundColor Yellow
-    Write-ProvisioningLog "Running in TEST MODE" "WARNING"
-}
-
-Write-Host "`n📋 GROUP DETAILS:" -ForegroundColor Cyan
+Write-Host "`nGROUP DETAILS:" -ForegroundColor Cyan
 Write-Host "  Group Name: $GroupName" -ForegroundColor White
 Write-Host "  Description: $Description" -ForegroundColor White
 Write-Host "  Type: $GroupType" -ForegroundColor White
@@ -93,11 +86,11 @@ try {
     Import-Module ActiveDirectory -ErrorAction Stop
     $ADDomainInfo = Get-ADDomain -ErrorAction Stop
     $ADAvailable = $true
-    Write-Host "   ✓ Active Directory available: $($ADDomainInfo.DNSRoot)" -ForegroundColor Green
+    Write-Host "   Active Directory available: $($ADDomainInfo.DNSRoot)" -ForegroundColor Green
     Write-ProvisioningLog "Active Directory available: $($ADDomainInfo.DNSRoot)"
 }
 catch {
-    Write-Host "   ⚠ Active Directory not available: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "   Warning: Active Directory not available: $($_.Exception.Message)" -ForegroundColor Yellow
     Write-ProvisioningLog "Active Directory not available: $($_.Exception.Message)" "WARNING"
 }
 
@@ -124,23 +117,23 @@ try {
         $Context = Receive-Job -Job $ConnectionJob
         if ($Context) {
             $AzureAvailable = $true
-            Write-Host "   ✓ Azure AD available: $($Context.TenantId)" -ForegroundColor Green
+            Write-Host "   Azure AD available: $($Context.TenantId)" -ForegroundColor Green
             Write-ProvisioningLog "Azure AD available: $($Context.TenantId)"
         }
     } else {
         Stop-Job -Job $ConnectionJob
-        Write-Host "   ⚠ Azure AD connection timeout" -ForegroundColor Yellow
+        Write-Host "   Warning: Azure AD connection timeout" -ForegroundColor Yellow
     }
     Remove-Job -Job $ConnectionJob -Force
 }
 catch {
-    Write-Host "   ⚠ Azure AD not available: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "   Warning: Azure AD not available: $($_.Exception.Message)" -ForegroundColor Yellow
     Write-ProvisioningLog "Azure AD not available: $($_.Exception.Message)" "WARNING"
 }
 
 # Step 3: Determine what can be done
 if (-not $ADAvailable -and -not $AzureAvailable) {
-    Write-Host "   ✗ Neither Active Directory nor Azure AD are available" -ForegroundColor Red
+    Write-Host "   Neither Active Directory nor Azure AD are available" -ForegroundColor Red
     Write-ProvisioningLog "Neither AD nor Azure AD available - cannot provision group" "ERROR"
     exit 1
 }
@@ -148,14 +141,6 @@ if (-not $ADAvailable -and -not $AzureAvailable) {
 # Step 4: Create Active Directory Group
 if ($ADAvailable) {
     Write-Host "`n4. Processing Active Directory group..." -ForegroundColor Yellow
-    if ($TestRun) {
-        Write-Host "   🧪 TEST: Would create AD group: $GroupName" -ForegroundColor Cyan
-        Write-Host "   🧪 TEST: Type: $GroupType, Scope: $GroupScope" -ForegroundColor Cyan
-        if ($Members) {
-            Write-Host "   🧪 TEST: Would add members: $($Members -join ', ')" -ForegroundColor Cyan
-        }
-        Write-ProvisioningLog "TEST: Would create AD group: $GroupName"
-    } else {
         try {
             # Check if group already exists
             $ExistingGroup = $null
@@ -166,23 +151,23 @@ if ($ADAvailable) {
                 $ExistingGroup = $null
             }
             catch {
-                Write-Host "   ⚠ Error checking existing group: $($_.Exception.Message)" -ForegroundColor Yellow
+                Write-Host "   Warning: Error checking existing group: $($_.Exception.Message)" -ForegroundColor Yellow
                 $ExistingGroup = $null
             }
             
             if ($ExistingGroup) {
-                Write-Host "   ⚠ AD group already exists: $GroupName" -ForegroundColor Yellow
+                Write-Host "   Warning: AD group already exists: $GroupName" -ForegroundColor Yellow
                 Write-ProvisioningLog "AD group already exists: $GroupName" "WARNING"
             } else {
                 # Determine target OU
                 $TargetOU = "OU=DevelopmentGroups,DC=contoso,DC=local"
                 try {
                     Get-ADOrganizationalUnit -Identity $TargetOU -ErrorAction Stop | Out-Null
-                    Write-Host "   ✓ Using target OU: $TargetOU" -ForegroundColor Gray
+                    Write-Host "   Using target OU: $TargetOU" -ForegroundColor Gray
                 }
                 catch {
                     $TargetOU = "CN=Users,DC=contoso,DC=local"
-                    Write-Host "   ⚠ Using default Users container (DevelopmentGroups OU not found)" -ForegroundColor Yellow
+                    Write-Host "   Warning: Using default Users container (DevelopmentGroups OU not found)" -ForegroundColor Yellow
                     Write-ProvisioningLog "Using default Users container - DevelopmentGroups OU not found" "WARNING"
                 }
                 
@@ -195,7 +180,7 @@ if ($ADAvailable) {
                            -GroupCategory $GroupCategory `
                            -Path $TargetOU
                 
-                Write-Host "   ✓ AD group created successfully: $GroupName" -ForegroundColor Green
+                Write-Host "   AD group created successfully: $GroupName" -ForegroundColor Green
                 Write-ProvisioningLog "AD group created successfully: $GroupName"
                 
                 # Add members if specified
@@ -213,15 +198,15 @@ if ($ADAvailable) {
                             $ADUser = Get-ADUser -Identity $Username -ErrorAction SilentlyContinue
                             if ($ADUser) {
                                 Add-ADGroupMember -Identity $GroupName -Members $Username
-                                Write-Host "   ✓ Added member: $Username" -ForegroundColor Green
+                                Write-Host "   Added member: $Username" -ForegroundColor Green
                                 Write-ProvisioningLog "Added member to AD group: $Username"
                             } else {
-                                Write-Host "   ⚠ User not found in AD: $Username" -ForegroundColor Yellow
+                                Write-Host "   Warning: User not found in AD: $Username" -ForegroundColor Yellow
                                 Write-ProvisioningLog "User not found in AD: $Username" "WARNING"
                             }
                         }
                         catch {
-                            Write-Host "   ⚠ Failed to add member $Member`: $($_.Exception.Message)" -ForegroundColor Yellow
+                            Write-Host "   Warning: Failed to add member $Member`: $($_.Exception.Message)" -ForegroundColor Yellow
                             Write-ProvisioningLog "Failed to add member $Member`: $($_.Exception.Message)" "WARNING"
                         }
                     }
@@ -229,10 +214,9 @@ if ($ADAvailable) {
             }
         }
         catch {
-            Write-Host "   ✗ Failed to create AD group: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "   Failed to create AD group: $($_.Exception.Message)" -ForegroundColor Red
             Write-ProvisioningLog "Failed to create AD group: $($_.Exception.Message)" "ERROR"
         }
-    }
 } else {
     Write-Host "`n4. Active Directory group creation skipped (AD not available)" -ForegroundColor Yellow
 }
@@ -242,20 +226,6 @@ if ($ADAvailable) {
 # Step 5: Create Azure AD Group
 if ($AzureAvailable) {
     Write-Host "`n5. Processing Azure AD group..." -ForegroundColor Yellow
-    if ($TestRun) {
-        Write-Host "   🧪 TEST: Would create Azure AD group: $GroupName" -ForegroundColor Cyan
-        if ($GroupType -eq "Distribution") {
-            Write-Host "   🧪 TEST: Note - Azure AD will create as Security group (Distribution groups not supported via API)" -ForegroundColor Yellow
-        }
-        Write-Host "   🧪 TEST: Security Enabled: Yes (Azure AD requirement)" -ForegroundColor Cyan
-        if ($Owner) {
-            Write-Host "   🧪 TEST: Would set owner: $Owner" -ForegroundColor Cyan
-        }
-        if ($Members) {
-            Write-Host "   🧪 TEST: Would add members: $($Members -join ', ')" -ForegroundColor Cyan
-        }
-        Write-ProvisioningLog "TEST: Would create Azure AD group: $GroupName"
-    } else {
         try {
             # Use job pattern for Azure operations
             $AzureGroupJob = Start-Job -ScriptBlock {
@@ -361,24 +331,24 @@ if ($AzureAvailable) {
                 $AzureResult = Receive-Job -Job $AzureGroupJob
                 if ($AzureResult.Success) {
                     if ($AzureResult.Warning) {
-                        Write-Host "   ⚠ $($AzureResult.Warning)" -ForegroundColor Yellow
+                        Write-Host "   Warning: $($AzureResult.Warning)" -ForegroundColor Yellow
                         Write-ProvisioningLog $AzureResult.Warning "WARNING"
                     }
                     
                     if ($AzureResult.GroupExists) {
-                        Write-Host "   ⚠ Azure AD group already exists: $GroupName" -ForegroundColor Yellow
+                        Write-Host "   Warning: Azure AD group already exists: $GroupName" -ForegroundColor Yellow
                         Write-ProvisioningLog "Azure AD group already exists: $GroupName" "WARNING"
                     } elseif ($AzureResult.GroupCreated) {
-                        Write-Host "   ✓ Azure AD group created successfully: $GroupName" -ForegroundColor Green
+                        Write-Host "   Azure AD group created successfully: $GroupName" -ForegroundColor Green
                         Write-ProvisioningLog "Azure AD group created successfully: $GroupName"
                     }
                     Write-Host "   Details: $($AzureResult.Message)" -ForegroundColor Gray
                 } else {
-                    Write-Host "   ✗ Failed to create Azure AD group: $($AzureResult.Message)" -ForegroundColor Red
+                    Write-Host "   Failed to create Azure AD group: $($AzureResult.Message)" -ForegroundColor Red
                     Write-ProvisioningLog "Failed to create Azure AD group: $($AzureResult.Message)" "ERROR"
                 }
             } else {
-                Write-Host "   ✗ Azure AD group creation timed out" -ForegroundColor Red
+                Write-Host "   Azure AD group creation timed out" -ForegroundColor Red
                 Write-ProvisioningLog "Azure AD group creation timed out" "ERROR"
                 Stop-Job -Job $AzureGroupJob -Force
             }
@@ -386,10 +356,9 @@ if ($AzureAvailable) {
             Remove-Job -Job $AzureGroupJob -Force
         }
         catch {
-            Write-Host "   ✗ Failed to create Azure AD group: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "   Failed to create Azure AD group: $($_.Exception.Message)" -ForegroundColor Red
             Write-ProvisioningLog "Failed to create Azure AD group: $($_.Exception.Message)" "ERROR"
         }
-    }
 } else {
     Write-Host "`n5. Azure AD group creation skipped (Azure AD not available)" -ForegroundColor Yellow
 }
@@ -400,29 +369,22 @@ Write-Host "Group Name: $GroupName" -ForegroundColor White
 Write-Host "Description: $Description" -ForegroundColor White
 Write-Host "Type: $GroupType" -ForegroundColor White
 Write-Host "Scope: $GroupScope" -ForegroundColor White
-Write-Host "AD Available: $(if($ADAvailable){'✓ Yes'}else{'✗ No'})" -ForegroundColor $(if($ADAvailable){'Green'}else{'Red'})
-Write-Host "Azure Available: $(if($AzureAvailable){'✓ Yes'}else{'✗ No'})" -ForegroundColor $(if($AzureAvailable){'Green'}else{'Red'})
-Write-Host "Mode: $(if($TestRun){'🧪 Test Run'}else{'✅ Live Run'})" -ForegroundColor $(if($TestRun){'Yellow'}else{'Green'})
+Write-Host "AD Available: $(if($ADAvailable){'Yes'}else{'No'})" -ForegroundColor $(if($ADAvailable){'Green'}else{'Red'})
+Write-Host "Azure Available: $(if($AzureAvailable){'Yes'}else{'No'})" -ForegroundColor $(if($AzureAvailable){'Green'}else{'Red'})
+Write-Host "Mode: Live Run" -ForegroundColor Green
 
 # Add Azure AD limitation note
-if ($GroupType -eq "Distribution" -and -not $TestRun) {
-    Write-Host "`n📝 AZURE AD NOTE:" -ForegroundColor Yellow
+if ($GroupType -eq "Distribution") {
+    Write-Host "`nAZURE AD NOTE:" -ForegroundColor Yellow
     Write-Host "Distribution groups in Azure AD were created as Security groups due to Graph API limitations." -ForegroundColor White
     Write-Host "You can manually convert to mail-enabled distribution groups in the Azure AD admin center if needed." -ForegroundColor White
 }
-if (-not $TestRun) {
-    Write-Host "`n📋 NEXT STEPS:" -ForegroundColor Green
-    Write-Host "1. Verify group creation with Get-ProvisioningStatus.ps1" -ForegroundColor White
-    Write-Host "2. Add additional members as needed" -ForegroundColor White
-    Write-Host "3. Configure group permissions and access" -ForegroundColor White
-    Write-Host "4. Document group purpose and ownership" -ForegroundColor White
-}
+Write-Host "`nNEXT STEPS:" -ForegroundColor Green
+Write-Host "1. Verify group creation with Get-ProvisioningStatus.ps1" -ForegroundColor White
+Write-Host "2. Add additional members as needed" -ForegroundColor White
+Write-Host "3. Configure group permissions and access" -ForegroundColor White
+Write-Host "4. Document group purpose and ownership" -ForegroundColor White
 
-if ($TestRun) {
-    Write-Host "`n✅ TEST RUN COMPLETED!" -ForegroundColor Green
-    Write-Host "Run without -TestRun to create actual groups" -ForegroundColor Yellow
-} else {
-    Write-Host "`n✅ HYBRID GROUP PROVISIONING COMPLETED!" -ForegroundColor Green
-}
+Write-Host "`nHYBRID GROUP PROVISIONING COMPLETED" -ForegroundColor Green
 
 Write-ProvisioningLog "Hybrid group provisioning completed for: $GroupName"

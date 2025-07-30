@@ -14,10 +14,10 @@ foreach ($Tool in $Tools) {
     Write-Host "Installing $($Tool.Name)..." -ForegroundColor Yellow
     try {
         choco install $($Tool.Package) -y
-        Write-Host "✓ $($Tool.Name) installed successfully" -ForegroundColor Green
+        Write-Host "Success: $($Tool.Name) installed successfully" -ForegroundColor Green
     }
     catch {
-        Write-Host "✗ Failed to install $($Tool.Name)" -ForegroundColor Red
+        Write-Host "Error: Failed to install $($Tool.Name)" -ForegroundColor Red
         Write-Host $_.Exception.Message -ForegroundColor Red
     }
 }
@@ -29,11 +29,11 @@ refreshenv
 # Verify PowerShell 7 installation
 try {
     $PS7Version = pwsh --version
-    Write-Host "✓ PowerShell 7 version: $PS7Version" -ForegroundColor Green
+    Write-Host "Success: PowerShell 7 version: $PS7Version" -ForegroundColor Green
 }
 catch {
-    Write-Host "✗ PowerShell 7 not found in PATH" -ForegroundColor Red
+    Write-Host "Error: PowerShell 7 not found in PATH" -ForegroundColor Red
 }
 
-Write-Host "✓ Development tools installation complete!" -ForegroundColor Green
+Write-Host "Success: Development tools installation complete!" -ForegroundColor Green
 Write-Host "Next: Open VS Code and install PowerShell extension, then run 03-InstallModules.ps1" -ForegroundColor Cyan

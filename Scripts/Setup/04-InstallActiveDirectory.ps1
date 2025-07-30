@@ -9,15 +9,15 @@ Write-Host "=== ACTIVE DIRECTORY INSTALLATION ===" -ForegroundColor Cyan
 $ADFeature = Get-WindowsFeature -Name AD-Domain-Services
 
 if ($ADFeature.InstallState -eq "Installed") {
-    Write-Host "✓ AD-Domain-Services feature already installed" -ForegroundColor Green
+    Write-Host "Success: AD-Domain-Services feature already installed" -ForegroundColor Green
 } else {
     Write-Host "Installing Active Directory Domain Services..." -ForegroundColor Yellow
     try {
         Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
-        Write-Host "✓ AD DS feature installed!" -ForegroundColor Green
+        Write-Host "Success: AD DS feature installed!" -ForegroundColor Green
     }
     catch {
-        Write-Host "✗ Failed to install AD DS: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Error: Failed to install AD DS: $($_.Exception.Message)" -ForegroundColor Red
         exit 1
     }
 }
@@ -26,7 +26,7 @@ if ($ADFeature.InstallState -eq "Installed") {
 try {
     $Domain = Get-ADDomain -ErrorAction SilentlyContinue
     if ($Domain) {
-        Write-Host "✓ Server is already a domain controller for: $($Domain.DNSRoot)" -ForegroundColor Green
+        Write-Host "Success: Server is already a domain controller for: $($Domain.DNSRoot)" -ForegroundColor Green
         Write-Host "Skipping domain controller promotion." -ForegroundColor Yellow
         Write-Host "Next: Run 05-ConfigureActiveDirectory.ps1" -ForegroundColor Cyan
         exit 0
@@ -38,8 +38,8 @@ catch {
 }
 
 Write-Host "`nPromoving server to Domain Controller..." -ForegroundColor Yellow
-Write-Host "⚠️  SERVER WILL RESTART AUTOMATICALLY AFTER THIS STEP" -ForegroundColor Red
-Write-Host "⚠️  Reconnect via RDP after restart and run 05-ConfigureActiveDirectory.ps1" -ForegroundColor Red
+Write-Host "WARNING: SERVER WILL RESTART AUTOMATICALLY AFTER THIS STEP" -ForegroundColor Red
+Write-Host "WARNING: Reconnect via RDP after restart and run 05-ConfigureActiveDirectory.ps1" -ForegroundColor Red
 
 # Prompt for confirmation
 $Confirm = Read-Host "`nContinue with domain controller promotion? (y/N)"
@@ -60,6 +60,6 @@ try {
     # This point won't be reached as the server will restart
 }
 catch {
-    Write-Host "✗ Failed to promote server to domain controller: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Error: Failed to promote server to domain controller: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }

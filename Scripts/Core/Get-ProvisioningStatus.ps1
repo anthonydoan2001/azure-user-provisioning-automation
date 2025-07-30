@@ -7,34 +7,31 @@ param(
     [string]$UserIdentity,
     
     [Parameter(Mandatory = $false)]
-    [string]$GroupIdentity,
-    
-    [Parameter(Mandatory = $false)]
-    [switch]$ShowDetailedReport
+    [string]$GroupIdentity
 )
 
-Write-Host "=== PROVISIONING STATUS CHECK ===" -ForegroundColor Cyan
+Write-Host "PROVISIONING STATUS CHECK"
 
-# Load configuration (same pattern as debug script)
-Write-Host "Loading configuration..." -ForegroundColor Yellow
+# Load configuration
+Write-Host "Loading configuration..."
 try {
     $CredentialsPath = "C:\UserProvisioningProject\Config\credentials.json"
     if (Test-Path $CredentialsPath) {
         $Credentials = Get-Content $CredentialsPath | ConvertFrom-Json
-        Write-Host "✓ Configuration loaded" -ForegroundColor Green
+        Write-Host "Configuration loaded"
     } else {
-        Write-Host "✗ Configuration file not found" -ForegroundColor Red
+        Write-Host "Configuration file not found" -ForegroundColor Red
         exit 1
     }
 } catch {
-    Write-Host "✗ Configuration error: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Configuration error: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
 
 function Get-UserStatus {
     param([string]$Identity)
     
-    Write-Host "`n🔍 Checking user: $Identity" -ForegroundColor Yellow
+    Write-Host "`nChecking user: $Identity" -ForegroundColor Yellow
     
     $UserStatus = [PSCustomObject]@{
         Identity = $Identity
@@ -68,14 +65,14 @@ function Get-UserStatus {
                     } catch { $null }
                 } | Where-Object { $_ -ne $null }
             }
-            Write-Host "    ✓ Found in AD: $($ADUser.Name)" -ForegroundColor Green
+            Write-Host "    Found in AD: $($ADUser.Name)" -ForegroundColor Green
         } else {
-            Write-Host "    ✗ Not found in AD" -ForegroundColor Red
+            Write-Host "    Not found in AD" -ForegroundColor Red
         }
     }
     catch {
         $UserStatus.Issues += "AD lookup failed"
-        Write-Host "    ✗ AD lookup error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "    AD lookup error: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     # Check Azure AD (same pattern as debug)
@@ -132,12 +129,12 @@ function Get-UserStatus {
                 if (-not $UserStatus.DisplayName) {
                     $UserStatus.DisplayName = $AzureResult.DisplayName
                 }
-                Write-Host "    ✓ Found in Azure AD: $($AzureResult.DisplayName)" -ForegroundColor Green
+                Write-Host "    Found in Azure AD: $($AzureResult.DisplayName)" -ForegroundColor Green
             } else {
-                Write-Host "    ✗ Not found in Azure AD" -ForegroundColor Red
+                Write-Host "    Not found in Azure AD" -ForegroundColor Red
             }
         } else {
-            Write-Host "    ✗ Azure AD lookup timed out" -ForegroundColor Red
+            Write-Host "    Azure AD lookup timed out" -ForegroundColor Red
             $UserStatus.Issues += "Azure AD lookup timeout"
             Stop-Job -Job $ConnectionJob -Force
         }
@@ -147,7 +144,7 @@ function Get-UserStatus {
     }
     catch {
         $UserStatus.Issues += "Azure AD lookup failed"
-        Write-Host "    ✗ Azure AD error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "    Azure AD error: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     # Determine sync status
@@ -172,7 +169,7 @@ function Get-UserStatus {
 function Get-GroupStatus {
     param([string]$Identity)
     
-    Write-Host "`n🔍 Checking group: $Identity" -ForegroundColor Yellow
+    Write-Host "`nChecking group: $Identity" -ForegroundColor Yellow
     
     $GroupStatus = [PSCustomObject]@{
         Identity = $Identity
@@ -215,14 +212,14 @@ function Get-GroupStatus {
                     }
                 }
             }
-            Write-Host "    ✓ Found in AD: $($ADGroup.Name) ($($ADGroup.Members.Count) members)" -ForegroundColor Green
+            Write-Host "    Found in AD: $($ADGroup.Name) ($($ADGroup.Members.Count) members)" -ForegroundColor Green
         } else {
-            Write-Host "    ✗ Not found in AD" -ForegroundColor Red
+            Write-Host "    Not found in AD" -ForegroundColor Red
         }
     }
     catch {
         $GroupStatus.Issues += "AD lookup failed"
-        Write-Host "    ✗ AD lookup error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "    AD lookup error: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     # Check Azure AD - FIXED VERSION
@@ -324,7 +321,7 @@ function Get-GroupStatus {
                 if (-not $GroupStatus.DisplayName) {
                     $GroupStatus.DisplayName = $AzureResult.DisplayName
                 }
-                Write-Host "    ✓ Found in Azure AD: $($AzureResult.DisplayName) ($($AzureResult.MemberCount) members)" -ForegroundColor Green
+                Write-Host "    Found in Azure AD: $($AzureResult.DisplayName) ($($AzureResult.MemberCount) members)" -ForegroundColor Green
                 
                 # Show member breakdown if detailed info available
                 if ($AzureResult.MemberDetails -and $AzureResult.MemberDetails.Count -gt 0) {
@@ -337,10 +334,10 @@ function Get-GroupStatus {
                     if ($OtherCount -gt 0) { Write-Host "      Other Objects: $OtherCount" -ForegroundColor Gray }
                 }
             } else {
-                Write-Host "    ✗ Not found in Azure AD" -ForegroundColor Red
+                Write-Host "    Not found in Azure AD" -ForegroundColor Red
             }
         } else {
-            Write-Host "    ✗ Azure AD lookup timed out" -ForegroundColor Red
+            Write-Host "    Azure AD lookup timed out" -ForegroundColor Red
             $GroupStatus.Issues += "Azure AD lookup timeout"
             Stop-Job -Job $AzureGroupJob -Force
         }
@@ -350,7 +347,7 @@ function Get-GroupStatus {
     }
     catch {
         $GroupStatus.Issues += "Azure AD lookup failed"
-        Write-Host "    ✗ Azure AD error: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "    Azure AD error: $($_.Exception.Message)" -ForegroundColor Red
     }
     
     # Determine sync status
@@ -388,7 +385,7 @@ function Show-GroupStatusReport {
     )
     
     if ($GroupStatus.ADExists) {
-        Write-Host "`n📁 ACTIVE DIRECTORY:" -ForegroundColor Blue
+        Write-Host "`nACTIVE DIRECTORY:" -ForegroundColor Blue
         Write-Host "  Type: $($GroupStatus.GroupType)" -ForegroundColor White
         Write-Host "  Members: $($GroupStatus.ADMemberCount)" -ForegroundColor White
         if ($GroupStatus.ADMembers.Count -gt 0) {
@@ -397,7 +394,7 @@ function Show-GroupStatusReport {
     }
     
     if ($GroupStatus.AzureExists) {
-        Write-Host "`n☁️ AZURE AD:" -ForegroundColor Blue
+        Write-Host "`nAZURE AD:" -ForegroundColor Blue
         Write-Host "  Members: $($GroupStatus.AzureMemberCount)" -ForegroundColor White
         if ($GroupStatus.AzureMembers.Count -gt 0) {
             Write-Host "  Member List: $($GroupStatus.AzureMembers -join ', ')" -ForegroundColor White
@@ -405,9 +402,9 @@ function Show-GroupStatusReport {
     }
     
     if ($GroupStatus.Issues.Count -gt 0) {
-        Write-Host "`n⚠️ ISSUES:" -ForegroundColor Red
+        Write-Host "`nISSUES:" -ForegroundColor Red
         $GroupStatus.Issues | ForEach-Object {
-            Write-Host "  • $_" -ForegroundColor Red
+            Write-Host "  - $_" -ForegroundColor Red
         }
     }
 }
@@ -428,7 +425,7 @@ function Show-UserStatusReport {
     )
     
     if ($UserStatus.ADExists) {
-        Write-Host "`n📁 ACTIVE DIRECTORY:" -ForegroundColor Blue
+        Write-Host "`nACTIVE DIRECTORY:" -ForegroundColor Blue
         Write-Host "  Enabled: $($UserStatus.ADEnabled)" -ForegroundColor White
         if ($UserStatus.ADGroups.Count -gt 0) {
             Write-Host "  Groups ($($UserStatus.ADGroups.Count)): $($UserStatus.ADGroups -join ', ')" -ForegroundColor White
@@ -436,14 +433,14 @@ function Show-UserStatusReport {
     }
     
     if ($UserStatus.AzureExists) {
-        Write-Host "`n☁️ AZURE AD:" -ForegroundColor Blue
+        Write-Host "`nAZURE AD:" -ForegroundColor Blue
         Write-Host "  Enabled: $($UserStatus.AzureEnabled)" -ForegroundColor White
     }
     
     if ($UserStatus.Issues.Count -gt 0) {
-        Write-Host "`n⚠️ ISSUES:" -ForegroundColor Red
+        Write-Host "`nISSUES:" -ForegroundColor Red
         $UserStatus.Issues | ForEach-Object {
-            Write-Host "  • $_" -ForegroundColor Red
+            Write-Host "  - $_" -ForegroundColor Red
         }
     }
 }
@@ -456,9 +453,9 @@ if ($UserIdentity) {
     $GroupStatus = Get-GroupStatus -Identity $GroupIdentity
     Show-GroupStatusReport -GroupStatus $GroupStatus
 } else {
-    Write-Host "`n📋 USAGE EXAMPLES:" -ForegroundColor Cyan
+    Write-Host "`nUSAGE EXAMPLES:" -ForegroundColor Cyan
     Write-Host "Check user:   .\Scripts\Get-ProvisioningStatus.ps1 -UserIdentity 'athompson'" -ForegroundColor White
     Write-Host "Check group:  .\Scripts\Get-ProvisioningStatus.ps1 -GroupIdentity 'Frontend-Developers'" -ForegroundColor White
 }
 
-Write-Host "`n✅ STATUS CHECK COMPLETE!" -ForegroundColor Green
+Write-Host "`nSTATUS CHECK COMPLETE" -ForegroundColor Green

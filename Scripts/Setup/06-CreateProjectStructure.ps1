@@ -38,10 +38,10 @@ $Settings = @{
 
 try {
     $Settings | ConvertTo-Json -Depth 3 | Out-File -FilePath "Config\settings.json" -Encoding UTF8
-    Write-Host "✓ Configuration file created: Config\settings.json" -ForegroundColor Green
+    Write-Host "Success: Configuration file created: Config\settings.json" -ForegroundColor Green
 }
 catch {
-    Write-Host "✗ Failed to create configuration file: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Error: Failed to create configuration file: $($_.Exception.Message)" -ForegroundColor Red
 }
 
 # Create .gitignore file
@@ -78,10 +78,10 @@ profile.ps1
 
 try {
     $GitIgnore | Out-File -FilePath ".gitignore" -Encoding UTF8
-    Write-Host "✓ Git ignore file created: .gitignore" -ForegroundColor Green
+    Write-Host "Success: Git ignore file created: .gitignore" -ForegroundColor Green
 }
 catch {
-    Write-Host "✗ Failed to create .gitignore file: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Error: Failed to create .gitignore file: $($_.Exception.Message)" -ForegroundColor Red
 }
 
 # Create README.md
@@ -141,11 +141,11 @@ VM is configured to auto-shutdown at 8:00 PM Central Time to save costs.
 
 try {
     $ReadMe | Out-File -FilePath "README.md" -Encoding UTF8
-    Write-Host "✓ README file created: README.md" -ForegroundColor Green
+    Write-Host "Success: README file created: README.md" -ForegroundColor Green
 }
 catch {
-    Write-Host "✗ Failed to create README file: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Error: Failed to create README file: $($_.Exception.Message)" -ForegroundColor Red
 }
 
-Write-Host "`n✓ Project structure configuration complete!" -ForegroundColor Green
+Write-Host "`nSuccess: Project structure configuration complete!" -ForegroundColor Green
 Write-Host "Next: Run 07-EnvironmentTest.ps1" -ForegroundColor Cyan

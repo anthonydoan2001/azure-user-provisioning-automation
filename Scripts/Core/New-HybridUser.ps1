@@ -21,8 +21,6 @@ param(
     [Parameter(Mandatory = $false)]
     [string]$Location = "Main Office",
     
-    [Parameter(Mandatory = $false)]
-    [switch]$TestRun,
     
     [Parameter(Mandatory = $false)]
     [string]$LogPath = "C:\UserProvisioningProject\Logs\"
@@ -48,7 +46,7 @@ $ConfigPath = "C:\UserProvisioningProject\Config\settings.json"
 $CredentialsPath = "C:\UserProvisioningProject\Config\credentials.json"
 
 if (-not (Test-Path $ConfigPath) -or -not (Test-Path $CredentialsPath)) {
-    Write-Host "✗ Configuration files not found. Run 08-UpdateAzureConfig.ps1 first." -ForegroundColor Red
+    Write-Host "Configuration files not found. Run 08-UpdateAzureConfig.ps1 first." -ForegroundColor Red
     exit 1
 }
 
@@ -61,14 +59,14 @@ try {
     $ADDomain = $Credentials.ADDomain
     
     if (-not $AzureDomain -or -not $ADDomain) {
-        Write-Host "✗ Domain configuration incomplete. Run 08-UpdateAzureConfig.ps1 to configure domains." -ForegroundColor Red
+        Write-Host "Domain configuration incomplete. Run 08-UpdateAzureConfig.ps1 to configure domains." -ForegroundColor Red
         exit 1
     }
     
     Write-ProvisioningLog "Loaded configuration - Azure Domain: $AzureDomain, AD Domain: $ADDomain"
     
 } catch {
-    Write-Host "✗ Failed to load configuration: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Failed to load configuration: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "Run 08-UpdateAzureConfig.ps1 to configure the system." -ForegroundColor Yellow
     exit 1
 }
@@ -83,12 +81,7 @@ $EmailAddress = "$SamAccountName@$AzureDomain"
 Write-Host "=== HYBRID USER PROVISIONING ===" -ForegroundColor Cyan
 Write-ProvisioningLog "Starting hybrid user provisioning for: $DisplayName"
 
-if ($TestRun) {
-    Write-Host "🧪 TEST RUN MODE - No actual changes will be made" -ForegroundColor Yellow
-    Write-ProvisioningLog "Running in TEST MODE" "WARNING"
-}
-
-Write-Host "`n📋 USER DETAILS:" -ForegroundColor Cyan
+Write-Host "`nUSER DETAILS:" -ForegroundColor Cyan
 Write-Host "  Display Name: $DisplayName" -ForegroundColor White
 Write-Host "  Username: $SamAccountName" -ForegroundColor White
 Write-Host "  AD UPN: $ADUserPrincipalName" -ForegroundColor White
@@ -107,11 +100,11 @@ try {
     # Test AD connection with timeout
     $ADDomain = Get-ADDomain -ErrorAction Stop
     $ADAvailable = $true
-    Write-Host "   ✓ Active Directory available: $($ADDomain.DNSRoot)" -ForegroundColor Green
+    Write-Host "   Active Directory available: $($ADDomain.DNSRoot)" -ForegroundColor Green
     Write-ProvisioningLog "Active Directory available: $($ADDomain.DNSRoot)"
 }
 catch {
-    Write-Host "   ⚠ Active Directory not available: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "   Warning: Active Directory not available: $($_.Exception.Message)" -ForegroundColor Yellow
     Write-ProvisioningLog "Active Directory not available: $($_.Exception.Message)" "WARNING"
 }
 
@@ -148,28 +141,28 @@ try {
             $Context = Receive-Job -Job $ConnectionJob
             if ($Context) {
                 $AzureAvailable = $true
-                Write-Host "   ✓ Azure AD available: $($Context.TenantId)" -ForegroundColor Green
+                Write-Host "   Azure AD available: $($Context.TenantId)" -ForegroundColor Green
                 Write-ProvisioningLog "Azure AD available: $($Context.TenantId)"
             }
         } else {
             Stop-Job -Job $ConnectionJob
-            Write-Host "   ⚠ Azure AD connection timeout" -ForegroundColor Yellow
+            Write-Host "   Warning: Azure AD connection timeout" -ForegroundColor Yellow
         }
         Remove-Job -Job $ConnectionJob -Force
     } else {
-        Write-Host "   ⚠ Azure AD credentials not configured" -ForegroundColor Yellow
+        Write-Host "   Warning: Azure AD credentials not configured" -ForegroundColor Yellow
         Write-ProvisioningLog "Azure AD credentials not configured" "WARNING"
     }
 }
 catch {
-    Write-Host "   ⚠ Azure AD not available: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "   Warning: Azure AD not available: $($_.Exception.Message)" -ForegroundColor Yellow
     Write-ProvisioningLog "Azure AD not available: $($_.Exception.Message)" "WARNING"
 }
 
 # Step 3: Determine what can be done
 Write-Host "`n3. Determining provisioning options..." -ForegroundColor Yellow
 if (-not $ADAvailable -and -not $AzureAvailable) {
-    Write-Host "   ✗ Neither Active Directory nor Azure AD are available" -ForegroundColor Red
+    Write-Host "   Neither Active Directory nor Azure AD are available" -ForegroundColor Red
     Write-Host "   Please complete the environment setup first." -ForegroundColor Yellow
     Write-ProvisioningLog "Neither AD nor Azure AD available - cannot provision user" "ERROR"
     exit 1
@@ -178,12 +171,6 @@ if (-not $ADAvailable -and -not $AzureAvailable) {
 # Step 4: Create Active Directory User (if available) - FIXED VERSION
 if ($ADAvailable) {
     Write-Host "`n4. Processing Active Directory user..." -ForegroundColor Yellow
-    if ($TestRun) {
-        Write-Host "   🧪 TEST: Would create AD user: $SamAccountName" -ForegroundColor Cyan
-        Write-Host "   🧪 TEST: Would set password and enable account" -ForegroundColor Cyan
-        Write-Host "   🧪 TEST: Would add to default groups" -ForegroundColor Cyan
-        Write-ProvisioningLog "TEST: Would create AD user: $SamAccountName"
-    } else {
         try {
             # Check if user already exists - FIXED ERROR HANDLING
             $ExistingUser = $null
@@ -196,12 +183,12 @@ if ($ADAvailable) {
             }
             catch {
                 # Other error - report it but continue
-                Write-Host "   ⚠ Error checking existing user: $($_.Exception.Message)" -ForegroundColor Yellow
+                Write-Host "   Warning: Error checking existing user: $($_.Exception.Message)" -ForegroundColor Yellow
                 $ExistingUser = $null
             }
             
             if ($ExistingUser) {
-                Write-Host "   ⚠ AD user already exists: $SamAccountName" -ForegroundColor Yellow
+                Write-Host "   Warning: AD user already exists: $SamAccountName" -ForegroundColor Yellow
                 Write-ProvisioningLog "AD user already exists: $SamAccountName" "WARNING"
             } else {
                 # Create the user
@@ -211,12 +198,12 @@ if ($ADAvailable) {
                 $TargetOU = "OU=DevelopmentUsers,DC=contoso,DC=local"
                 try {
                     Get-ADOrganizationalUnit -Identity $TargetOU -ErrorAction Stop | Out-Null
-                    Write-Host "   ✓ Using target OU: $TargetOU" -ForegroundColor Gray
+                    Write-Host "   Using target OU: $TargetOU" -ForegroundColor Gray
                 }
                 catch {
                     # Fall back to default Users container
                     $TargetOU = "CN=Users,DC=contoso,DC=local"
-                    Write-Host "   ⚠ Using default Users container (DevelopmentUsers OU not found)" -ForegroundColor Yellow
+                    Write-Host "   Warning: Using default Users container (DevelopmentUsers OU not found)" -ForegroundColor Yellow
                     Write-ProvisioningLog "Using default Users container - DevelopmentUsers OU not found" "WARNING"
                 }
                 
@@ -241,7 +228,7 @@ if ($ADAvailable) {
                 
                 New-ADUser @NewUserParams
                 
-                Write-Host "   ✓ AD user created successfully: $SamAccountName" -ForegroundColor Green
+                Write-Host "   AD user created successfully: $SamAccountName" -ForegroundColor Green
                 Write-ProvisioningLog "AD user created successfully: $SamAccountName"
                 
                 # Add to default groups with better error handling
@@ -253,27 +240,26 @@ if ($ADAvailable) {
                     $DefaultGroups += "DevelopmentTeam"
                 }
                 catch {
-                    Write-Host "   ⚠ DevelopmentTeam group not found, skipping" -ForegroundColor Yellow
+                    Write-Host "   Warning: DevelopmentTeam group not found, skipping" -ForegroundColor Yellow
                 }
                 
                 foreach ($GroupName in $DefaultGroups) {
                     try {
                         Add-ADGroupMember -Identity $GroupName -Members $SamAccountName -ErrorAction Stop
-                        Write-Host "   ✓ Added to group: $GroupName" -ForegroundColor Green
+                        Write-Host "   Added to group: $GroupName" -ForegroundColor Green
                         Write-ProvisioningLog "Added user to group: $GroupName"
                     }
                     catch {
-                        Write-Host "   ⚠ Could not add to group $GroupName`: $($_.Exception.Message)" -ForegroundColor Yellow
+                        Write-Host "   Warning: Could not add to group $GroupName`: $($_.Exception.Message)" -ForegroundColor Yellow
                         Write-ProvisioningLog "Failed to add to group $GroupName`: $($_.Exception.Message)" "WARNING"
                     }
                 }
             }
         }
         catch {
-            Write-Host "   ✗ Failed to create AD user: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "   Failed to create AD user: $($_.Exception.Message)" -ForegroundColor Red
             Write-ProvisioningLog "Failed to create AD user: $($_.Exception.Message)" "ERROR"
         }
-    }
 } else {
     Write-Host "`n4. Active Directory user creation skipped (AD not available)" -ForegroundColor Yellow
 }
@@ -281,12 +267,6 @@ if ($ADAvailable) {
 # Step 5: Create Azure AD User (if available) - FIXED VERSION
 if ($AzureAvailable) {
     Write-Host "`n5. Processing Azure AD user..." -ForegroundColor Yellow
-    if ($TestRun) {
-        Write-Host "   🧪 TEST: Would create Azure AD user: $AzureUserPrincipalName" -ForegroundColor Cyan
-        Write-Host "   🧪 TEST: Would set temporary password with forced change" -ForegroundColor Cyan
-        Write-Host "   🧪 TEST: Would enable account and set properties" -ForegroundColor Cyan
-        Write-ProvisioningLog "TEST: Would create Azure AD user: $AzureUserPrincipalName"
-    } else {
         try {
             # Reconnect to Azure AD
             Import-Module Microsoft.Graph.Users -Force
@@ -297,7 +277,7 @@ if ($AzureAvailable) {
             # Check if user already exists - FIXED VERSION
             $ExistingAzureUser = Get-MgUser -Filter "userPrincipalName eq '$AzureUserPrincipalName'" -ErrorAction SilentlyContinue
             if ($ExistingAzureUser) {
-                Write-Host "   ⚠ Azure AD user already exists: $AzureUserPrincipalName" -ForegroundColor Yellow
+                Write-Host "   Warning: Azure AD user already exists: $AzureUserPrincipalName" -ForegroundColor Yellow
                 Write-ProvisioningLog "Azure AD user already exists: $AzureUserPrincipalName" "WARNING"
             } else {
                 # Create Azure AD user with correct domain
@@ -322,20 +302,19 @@ if ($AzureAvailable) {
                 }
                 
                 $NewAzureUser = New-MgUser @UserParams
-                Write-Host "   ✓ Azure AD user created successfully: $($NewAzureUser.UserPrincipalName)" -ForegroundColor Green
+                Write-Host "   Azure AD user created successfully: $($NewAzureUser.UserPrincipalName)" -ForegroundColor Green
                 Write-ProvisioningLog "Azure AD user created successfully: $($NewAzureUser.UserPrincipalName)"
             }
             
             Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null
         }
         catch {
-            Write-Host "   ✗ Failed to create Azure AD user: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "   Failed to create Azure AD user: $($_.Exception.Message)" -ForegroundColor Red
             Write-ProvisioningLog "Failed to create Azure AD user: $($_.Exception.Message)" "ERROR"
             try {
                 Disconnect-MgGraph -ErrorAction SilentlyContinue | Out-Null
             } catch {}
         }
-    }
 } else {
     Write-Host "`n5. Azure AD user creation skipped (Azure AD not available)" -ForegroundColor Yellow
 }
@@ -343,31 +322,24 @@ if ($AzureAvailable) {
 # Summary
 Write-Host "`n=== PROVISIONING SUMMARY ===" -ForegroundColor Cyan
 Write-Host "User: $DisplayName" -ForegroundColor White
-Write-Host "AD Available: $(if($ADAvailable){'✓ Yes'}else{'✗ No'})" -ForegroundColor $(if($ADAvailable){'Green'}else{'Red'})
-Write-Host "Azure Available: $(if($AzureAvailable){'✓ Yes'}else{'✗ No'})" -ForegroundColor $(if($AzureAvailable){'Green'}else{'Red'})
-Write-Host "Mode: $(if($TestRun){'🧪 Test Run'}else{'✅ Live Run'})" -ForegroundColor $(if($TestRun){'Yellow'}else{'Green'})
+Write-Host "AD Available: $(if($ADAvailable){'Yes'}else{'No'})" -ForegroundColor $(if($ADAvailable){'Green'}else{'Red'})
+Write-Host "Azure Available: $(if($AzureAvailable){'Yes'}else{'No'})" -ForegroundColor $(if($AzureAvailable){'Green'}else{'Red'})
+Write-Host "Mode: Live Run" -ForegroundColor Green
 
-if (-not $TestRun) {
-    Write-Host "`n📋 NEXT STEPS:" -ForegroundColor Green
-    Write-Host "1. User credentials:" -ForegroundColor White
-    if ($ADAvailable) {
-        Write-Host "   - AD Login: $SamAccountName" -ForegroundColor Gray
-        Write-Host "   - AD Password: TempPass123! (must change on first login)" -ForegroundColor Gray
-    }
-    if ($AzureAvailable) {
-        Write-Host "   - Azure Login: $AzureUserPrincipalName" -ForegroundColor Gray
-        Write-Host "   - Azure Password: TempAzurePass123! (must change on first login)" -ForegroundColor Gray
-    }
-    Write-Host "2. Assign licenses in Azure AD admin center if needed" -ForegroundColor White
-    Write-Host "3. Add to additional groups as required" -ForegroundColor White
-    Write-Host "4. Run Get-ProvisioningStatus.ps1 to verify sync status" -ForegroundColor White
+Write-Host "`nNEXT STEPS:" -ForegroundColor Green
+Write-Host "1. User credentials:" -ForegroundColor White
+if ($ADAvailable) {
+    Write-Host "   - AD Login: $SamAccountName" -ForegroundColor Gray
+    Write-Host "   - AD Password: TempPass123! (must change on first login)" -ForegroundColor Gray
 }
+if ($AzureAvailable) {
+    Write-Host "   - Azure Login: $AzureUserPrincipalName" -ForegroundColor Gray
+    Write-Host "   - Azure Password: TempAzurePass123! (must change on first login)" -ForegroundColor Gray
+}
+Write-Host "2. Assign licenses in Azure AD admin center if needed" -ForegroundColor White
+Write-Host "3. Add to additional groups as required" -ForegroundColor White
+Write-Host "4. Run Get-ProvisioningStatus.ps1 to verify sync status" -ForegroundColor White
 
-if ($TestRun) {
-    Write-Host "`n✅ TEST RUN COMPLETED!" -ForegroundColor Green
-    Write-Host "Run without -TestRun to create actual accounts" -ForegroundColor Yellow
-} else {
-    Write-Host "`n✅ HYBRID USER PROVISIONING COMPLETED!" -ForegroundColor Green
-}
+Write-Host "`nHYBRID USER PROVISIONING COMPLETED" -ForegroundColor Green
 
 Write-ProvisioningLog "Hybrid user provisioning completed for: $DisplayName"

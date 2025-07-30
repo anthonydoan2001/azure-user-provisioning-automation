@@ -10,14 +10,14 @@ Write-Host "Configuring Active Directory structure..." -ForegroundColor Yellow
 try {
     # Import Active Directory module
     Import-Module ActiveDirectory -ErrorAction Stop
-    Write-Host "✓ Active Directory module loaded" -ForegroundColor Green
+    Write-Host "Success: Active Directory module loaded" -ForegroundColor Green
     
     # Verify domain
     $Domain = Get-ADDomain
-    Write-Host "✓ Connected to domain: $($Domain.DNSRoot)" -ForegroundColor Green
+    Write-Host "Success: Connected to domain: $($Domain.DNSRoot)" -ForegroundColor Green
 }
 catch {
-    Write-Host "✗ Failed to connect to Active Directory: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Error: Failed to connect to Active Directory: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "Make sure the server restarted properly after domain promotion." -ForegroundColor Yellow
     exit 1
 }
@@ -35,10 +35,10 @@ $OUs = @(
 foreach ($OU in $OUs) {
     try {
         New-ADOrganizationalUnit -Name $OU.Name -Path "DC=contoso,DC=local" -Description $OU.Description -ErrorAction SilentlyContinue
-        Write-Host "✓ Created OU: $($OU.Name)" -ForegroundColor Green
+        Write-Host "Success: Created OU: $($OU.Name)" -ForegroundColor Green
     }
     catch {
-        Write-Host "⚠ OU $($OU.Name) may already exist" -ForegroundColor Yellow
+        Write-Host "Warning: OU $($OU.Name) may already exist" -ForegroundColor Yellow
     }
 }
 
@@ -67,10 +67,10 @@ foreach ($User in $TestUsers) {
                    -ChangePasswordAtLogon $false `
                    -Description "Test user created by automation script"
         
-        Write-Host "✓ Created user: $($User.Name) ($($User.SamAccount))" -ForegroundColor Green
+        Write-Host "Success: Created user: $($User.Name) ($($User.SamAccount))" -ForegroundColor Green
     }
     catch {
-        Write-Host "✗ Failed to create user: $($User.Name) - $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Error: Failed to create user: $($User.Name) - $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
@@ -90,10 +90,10 @@ foreach ($Group in $TestGroups) {
                     -GroupCategory Security `
                     -Path "OU=DevelopmentGroups,DC=contoso,DC=local" `
                     -Description $Group.Description
-        Write-Host "✓ Created group: $($Group.Name)" -ForegroundColor Green
+        Write-Host "Success: Created group: $($Group.Name)" -ForegroundColor Green
     }
     catch {
-        Write-Host "✗ Failed to create group: $($Group.Name) - $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Error: Failed to create group: $($Group.Name) - $($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
@@ -109,14 +109,14 @@ $GroupMemberships = @(
 foreach ($Membership in $GroupMemberships) {
     try {
         Add-ADGroupMember -Identity $Membership.Group -Members $Membership.User
-        Write-Host "✓ Added $($Membership.User) to $($Membership.Group)" -ForegroundColor Green
+        Write-Host "Success: Added $($Membership.User) to $($Membership.Group)" -ForegroundColor Green
     }
     catch {
-        Write-Host "✗ Failed to add $($Membership.User) to $($Membership.Group)" -ForegroundColor Red
+        Write-Host "Error: Failed to add $($Membership.User) to $($Membership.Group)" -ForegroundColor Red
     }
 }
 
-Write-Host "`n✓ Active Directory configuration complete!" -ForegroundColor Green
+Write-Host "`nSuccess: Active Directory configuration complete!" -ForegroundColor Green
 Write-Host "Next: Run 06-CreateProjectStructure.ps1" -ForegroundColor Cyan
 
 # Display summary

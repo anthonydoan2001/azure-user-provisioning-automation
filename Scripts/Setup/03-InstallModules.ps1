@@ -8,7 +8,7 @@ Write-Host "This script must be run in PowerShell 7 as Administrator" -Foregroun
 
 # Verify we're running PowerShell 7
 if ($PSVersionTable.PSVersion.Major -lt 7) {
-    Write-Host "✗ This script requires PowerShell 7. Please run in pwsh.exe" -ForegroundColor Red
+    Write-Host "Error: This script requires PowerShell 7. Please run in pwsh.exe" -ForegroundColor Red
     exit 1
 }
 
@@ -31,10 +31,10 @@ foreach ($Module in $PSGalleryModules) {
         
         # Verify installation
         $InstalledModule = Get-Module -Name $Module.Name -ListAvailable | Select-Object -First 1
-        Write-Host "✓ $($Module.Name) v$($InstalledModule.Version) installed successfully" -ForegroundColor Green
+        Write-Host "Success: $($Module.Name) v$($InstalledModule.Version) installed successfully" -ForegroundColor Green
     }
     catch {
-        Write-Host "✗ Failed to install $($Module.Name)" -ForegroundColor Red
+        Write-Host "Error: Failed to install $($Module.Name)" -ForegroundColor Red
         Write-Host "   Error: $($_.Exception.Message)" -ForegroundColor Red
     }
 }
@@ -46,26 +46,26 @@ try {
     $ADFeature = Get-WindowsFeature -Name AD-Domain-Services
     
     if ($ADFeature.InstallState -eq "Installed") {
-        Write-Host "✓ AD-Domain-Services already installed" -ForegroundColor Green
+        Write-Host "Success: AD-Domain-Services already installed" -ForegroundColor Green
     } else {
         Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
-        Write-Host "✓ AD-Domain-Services installed successfully" -ForegroundColor Green
+        Write-Host "Success: AD-Domain-Services installed successfully" -ForegroundColor Green
     }
     
     # Verify ActiveDirectory module is available
     $ADModule = Get-Module -Name ActiveDirectory -ListAvailable
     if ($ADModule) {
-        Write-Host "✓ ActiveDirectory PowerShell module is available" -ForegroundColor Green
+        Write-Host "Success: ActiveDirectory PowerShell module is available" -ForegroundColor Green
     } else {
-        Write-Host "⚠ ActiveDirectory module will be available after domain controller promotion" -ForegroundColor Yellow
+        Write-Host "Warning: ActiveDirectory module will be available after domain controller promotion" -ForegroundColor Yellow
     }
 }
 catch {
-    Write-Host "✗ Failed to install ActiveDirectory feature" -ForegroundColor Red
+    Write-Host "Error: Failed to install ActiveDirectory feature" -ForegroundColor Red
     Write-Host "   Error: $($_.Exception.Message)" -ForegroundColor Red
 }
 
-Write-Host "`n✓ Module installation complete!" -ForegroundColor Green
+Write-Host "`nSuccess: Module installation complete!" -ForegroundColor Green
 Write-Host "Next: Run 04-InstallActiveDirectory.ps1" -ForegroundColor Cyan
 
 # Create module verification script
@@ -80,10 +80,10 @@ foreach ($Module in $PSGalleryModules) {
     try {
         Import-Module $Module -ErrorAction Stop
         $ModuleInfo = Get-Module $Module
-        Write-Host "✓ $Module v$($ModuleInfo.Version) - Available" -ForegroundColor Green
+        Write-Host "Success: $Module v$($ModuleInfo.Version) - Available" -ForegroundColor Green
     }
     catch {
-        Write-Host "✗ $Module - Not available" -ForegroundColor Red
+        Write-Host "Error: $Module - Not available" -ForegroundColor Red
     }
 }
 
@@ -91,10 +91,10 @@ foreach ($Module in $PSGalleryModules) {
 try {
     Import-Module ActiveDirectory -ErrorAction Stop
     $ADModule = Get-Module ActiveDirectory
-    Write-Host "✓ ActiveDirectory v$($ADModule.Version) - Available" -ForegroundColor Green
+    Write-Host "Success: ActiveDirectory v$($ADModule.Version) - Available" -ForegroundColor Green
 }
 catch {
-    Write-Host "⚠ ActiveDirectory - Will be available after domain controller setup" -ForegroundColor Yellow
+    Write-Host "Warning: ActiveDirectory - Will be available after domain controller setup" -ForegroundColor Yellow
 }
 '@
 

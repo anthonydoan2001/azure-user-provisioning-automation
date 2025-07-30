@@ -8,7 +8,7 @@ if (-not (Test-Path "Config")) {
     New-Item -Path "Config" -ItemType Directory -Force | Out-Null
 }
 
-Write-Host "`n🔧 AZURE AD APP REGISTRATION SETUP" -ForegroundColor Yellow
+Write-Host "`nAZURE AD APP REGISTRATION SETUP" -ForegroundColor Yellow
 Write-Host "You need to create an App Registration in Azure AD first:" -ForegroundColor White
 Write-Host "1. Go to Azure Portal > Azure Active Directory > App registrations" -ForegroundColor Gray
 Write-Host "2. Click 'New registration'" -ForegroundColor Gray
@@ -19,15 +19,15 @@ Write-Host "6. Click 'Register'" -ForegroundColor Gray
 Write-Host "7. Go to 'Certificates & secrets' > 'New client secret'" -ForegroundColor Gray
 Write-Host "8. Go to 'API permissions' > Add the required permissions" -ForegroundColor Gray
 
-Write-Host "`n📋 REQUIRED API PERMISSIONS:" -ForegroundColor Yellow
+Write-Host "`nREQUIRED API PERMISSIONS:" -ForegroundColor Yellow
 Write-Host "Microsoft Graph (Application permissions):" -ForegroundColor White
-Write-Host "• User.ReadWrite.All" -ForegroundColor Gray
-Write-Host "• Group.ReadWrite.All" -ForegroundColor Gray
-Write-Host "• Organization.Read.All" -ForegroundColor Gray
-Write-Host "• Directory.ReadWrite.All" -ForegroundColor Gray
+Write-Host "- User.ReadWrite.All" -ForegroundColor Gray
+Write-Host "- Group.ReadWrite.All" -ForegroundColor Gray
+Write-Host "- Organization.Read.All" -ForegroundColor Gray
+Write-Host "- Directory.ReadWrite.All" -ForegroundColor Gray
 Write-Host "Then click 'Grant admin consent for [Your Organization]'" -ForegroundColor White
 
-Write-Host "`n🔐 ENTER YOUR AZURE AD DETAILS:" -ForegroundColor Yellow
+Write-Host "`nENTER YOUR AZURE AD DETAILS:" -ForegroundColor Yellow
 
 # Get Azure AD configuration
 $TenantId = Read-Host "Enter your Tenant ID"
@@ -35,7 +35,7 @@ $ClientId = Read-Host "Enter your Client ID (Application ID)"
 $ClientSecret = Read-Host "Enter your Client Secret" -AsSecureString
 
 # Get domain information
-Write-Host "`n🌐 DOMAIN CONFIGURATION:" -ForegroundColor Yellow
+Write-Host "`nDOMAIN CONFIGURATION:" -ForegroundColor Yellow
 Write-Host "Checking your verified domains..." -ForegroundColor Gray
 
 try {
@@ -55,7 +55,7 @@ try {
     $Org = Get-MgOrganization
     $VerifiedDomains = $Org.VerifiedDomains
     
-    Write-Host "✓ Found verified domains:" -ForegroundColor Green
+    Write-Host "Found verified domains:" -ForegroundColor Green
     $DomainList = @()
     $DefaultDomain = $null
     
@@ -77,7 +77,7 @@ try {
         $SelectedDomain = $DomainList[[int]$DomainChoice]
     }
     
-    Write-Host "✓ Selected domain: $SelectedDomain" -ForegroundColor Green
+    Write-Host "Selected domain: $SelectedDomain" -ForegroundColor Green
     
     Disconnect-MgGraph | Out-Null
     
@@ -91,7 +91,7 @@ Write-Host "`n🏢 ACTIVE DIRECTORY DOMAIN:" -ForegroundColor Yellow
 try {
     Import-Module ActiveDirectory -ErrorAction Stop
     $ADDomain = (Get-ADDomain).DNSRoot
-    Write-Host "✓ Detected AD domain: $ADDomain" -ForegroundColor Green
+    Write-Host "Detected AD domain: $ADDomain" -ForegroundColor Green
     $UseDetectedAD = Read-Host "Use this domain? (Y/n)"
     if ($UseDetectedAD.ToUpper() -eq "N") {
         $ADDomain = Read-Host "Enter your AD domain"
@@ -117,7 +117,7 @@ try {
     Write-Host "`n✅ Configuration saved to Config\credentials.json" -ForegroundColor Green
     
 } catch {
-    Write-Host "✗ Failed to save credentials: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Failed to save credentials: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
 }
 
@@ -203,18 +203,18 @@ $ClientSecret = $null
 $BSTR = $null
 
 Write-Host "`n🔒 SECURITY NOTE:" -ForegroundColor Yellow
-Write-Host "• Your credentials are stored in Config\credentials.json" -ForegroundColor White
-Write-Host "• This file is excluded from Git via .gitignore" -ForegroundColor White
-Write-Host "• Keep this file secure and never share it" -ForegroundColor White
+Write-Host "- Your credentials are stored in Config\credentials.json" -ForegroundColor White
+Write-Host "- This file is excluded from Git via .gitignore" -ForegroundColor White
+Write-Host "- Keep this file secure and never share it" -ForegroundColor White
 
 Write-Host "`n📋 CONFIGURATION SUMMARY:" -ForegroundColor Cyan
-Write-Host "• Azure AD Domain: $SelectedDomain" -ForegroundColor White
-Write-Host "• Active Directory Domain: $ADDomain" -ForegroundColor White
-Write-Host "• Tenant ID: $TenantId" -ForegroundColor White
-Write-Host "• Client ID: $ClientId" -ForegroundColor White
+Write-Host "- Azure AD Domain: $SelectedDomain" -ForegroundColor White
+Write-Host "- Active Directory Domain: $ADDomain" -ForegroundColor White
+Write-Host "- Tenant ID: $TenantId" -ForegroundColor White
+Write-Host "- Client ID: $ClientId" -ForegroundColor White
 
 Write-Host "`n📋 NEXT STEPS:" -ForegroundColor Green
-Write-Host "• Run: .\Scripts\09-TestAzureConnection.ps1" -ForegroundColor Cyan
-Write-Host "• Test user creation: .\Scripts\New-HybridUser.ps1 -FirstName 'Test' -LastName 'User' -Department 'IT' -JobTitle 'Developer' -TestRun" -ForegroundColor Cyan
+Write-Host "- Run: .\Scripts\09-TestAzureConnection.ps1" -ForegroundColor Cyan
+Write-Host "- Test user creation: .\Scripts\New-HybridUser.ps1 -FirstName 'Test' -LastName 'User' -Department 'IT' -JobTitle 'Developer' -TestRun" -ForegroundColor Cyan
 
 Write-Host "`n✅ AZURE AD CONFIGURATION COMPLETE!" -ForegroundColor Green
