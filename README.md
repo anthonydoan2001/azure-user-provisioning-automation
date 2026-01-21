@@ -22,7 +22,7 @@ PowerShell 7, Windows Server 2022, Active Directory, Azure AD, Microsoft Graph A
 
 ## Contact
 
-**Anthony Doan**
-- GitHub: [anthonydoan2001](https://github.com/anthonydoan2001)
-- LinkedIn: [anthonyduydoan](https://www.linkedin.com/in/anthonyduydoan/)
-- Email: anthonydoanwork@gmail.com
+**Anthony Doan**  
+GitHub: [anthonydoan2001](https://github.com/anthonydoan2001)  
+LinkedIn: [anthonyduydoan](https://www.linkedin.com/in/anthonyduydoan/)  
+Email: anthonydoanwork@gmail.com
