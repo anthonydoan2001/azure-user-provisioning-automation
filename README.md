@@ -6,7 +6,7 @@ PowerShell scripts for provisioning users between on-premises Active Directory a
 ![Azure](https://img.shields.io/badge/Microsoft_Azure-0078d4?style=for-the-badge&logo=microsoft-azure&logoColor=white)
 ![Windows Server](https://img.shields.io/badge/Windows%20Server-0078d4?style=for-the-badge&logo=windows&logoColor=white)
 ![Active Directory](https://img.shields.io/badge/Active%20Directory-0078d4?style=for-the-badge&logo=microsoft&logoColor=white)
-
+![License](https://img.shields.io/badge/License-Portfolio%20Project-green?style=for-the-badge)
 
 ## Project Structure
 
@@ -23,6 +23,7 @@ PowerShell 7, Windows Server 2022, Active Directory, Azure AD, Microsoft Graph A
 ## Contact
 
 **Anthony Doan**
+
 GitHub: [anthonydoan2001](https://github.com/anthonydoan2001)
 LinkedIn: [LinkedIn](https://www.linkedin.com/in/anthonyduydoan/)
 Email: [anthonydoanwork@gmail.com](mailto:anthonydoanwork@gmail.com)
